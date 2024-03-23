@@ -1,4 +1,4 @@
 # CIS-4500-Project
 
-## Cleaned directory:
-### Contains the cleaned dataset relevant for the project
+## Data directory:
+Contains the 3 cleaned dataset relevant for the project.
