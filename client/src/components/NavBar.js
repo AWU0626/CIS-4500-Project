@@ -12,7 +12,7 @@ function NavText({ href, text, isMain }) {
         marginRight: '30px',
         fontFamily: 'monospace',
         fontWeight: 700,
-        letterSpacing: '.3rem',
+        letterSpacing: '.2rem',
       }}
     >
       <NavLink
@@ -36,9 +36,11 @@ export default function NavBar() {
     <AppBar position='static'>
       <Container maxWidth='xl'>
         <Toolbar disableGutters>
-          <NavText href='/' text='TITLE' isMain />
-          <NavText href='/query1' text='query1' /> {/* have to change Query1 name to something else, they do not do anything yet */}
-          <NavText href='/query2' text='query2' /> {/* have to change Query2 name to something else, they do not do anything yet */}
+          <NavText href='/' text='ScholarStreets' isMain />
+          <NavText href='/query7' text='query7' />
+          <NavText href='/query5' text='query5' />
+          <NavText href='/query3-8' text='query3-8' />
+          <NavText href='/query6' text='query6' />
         </Toolbar>
       </Container>
     </AppBar>
