@@ -22,6 +22,10 @@ export default function HomePage() {
   }, []);
 
   return (
-    <h1>{homeTitle}</h1>
+    <div>
+      <h1>{homeTitle}</h1>
+      Implements Query 1
+    </div>
+    
   );
 };
