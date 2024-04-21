@@ -1,4 +1,9 @@
 {
+  "rds_host": "cis-550-project.cr5jcta1yk40.us-east-1.rds.amazonaws.com",
+  "rds_user": "admin",
+  "rds_password": "YvABRZweCe6vJCQ1aKO1",
+  "rds_db": "practice_project",
+  "rds_port": "3306",
   "server_host": "localhost",
   "server_port": "8080"
 }
