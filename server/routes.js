@@ -24,7 +24,50 @@ const query1And2 = async function (req, res) {
 
 // Route 2: GET /query3
 const query3 = async function (req, res) {
-  res.status(200).json({ message: 'query 3!' })
+  const priceMin = req.query.price_min ? req.query.price_min : 10000;
+  const priceMax = req.query.price_max ? req.query.price_max : 600000; 
+
+  const query = `WITH se2021 AS (
+    SELECT e.ID, e.STATE, e.AREA_NAME, e.COUNT AS year21Count
+    FROM EDUCATION e
+    WHERE time = 2021
+      AND education_level LIKE '4_above'
+   ), se2012 AS (
+    SELECT e.STATE, e.AREA_NAME, e.COUNT AS year12Count
+    FROM EDUCATION e
+    WHERE time = 2012
+      AND education_level LIKE '4_above'
+   ), edu_filtered AS (
+      SELECT s21.STATE,
+              round(((sum(year21Count) - SUM(year12Count)) / SUM(year12Count)), 2) AS avg_higher_edu_growth
+      FROM se2021 s21
+          JOIN se2012 s12 ON s12.AREA_NAME = s21.AREA_NAME
+          AND s12.STATE = s21.STATE
+   
+   
+      GROUP BY s21.state
+      ORDER BY avg_higher_edu_growth DESC
+      LIMIT 20
+   ), house_edu_filtered AS (
+    SELECT h.house_id, h.bed, h.bath, h.city, h.zip_code, h.house_size, h.price, ef.*
+    FROM  REAL_ESTATE h
+    JOIN edu_filtered ef ON ef.state = h.state
+    WHERE h.price <= ${priceMax} AND h.price > ${priceMin}
+   )
+   SELECT *
+   FROM house_edu_filtered hef
+   ORDER BY hef.price ASC
+   LIMIT 20;`;
+
+  connection.query(query, 
+    (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json([]);
+    } else {
+      res.json(data);
+    }
+  });
 }
 
 // Route 3: GET /query4
