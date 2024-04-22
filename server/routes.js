@@ -26,6 +26,9 @@ const query1And2 = async function (req, res) {
 const query3 = async function (req, res) {
   const priceMin = req.query.price_min ? req.query.price_min : 10000;
   const priceMax = req.query.price_max ? req.query.price_max : 600000; 
+  const page = req.query.page ?? 1;
+  const pageSize = req.query.page_size ?? 10;
+  const offset = (page - 1) * pageSize;
 
   const query = `WITH se2021 AS (
     SELECT e.ID, e.STATE, e.AREA_NAME, e.COUNT AS year21Count
@@ -56,8 +59,8 @@ const query3 = async function (req, res) {
    )
    SELECT *
    FROM house_edu_filtered hef
-   ORDER BY hef.price ASC
-   LIMIT 20;`;
+   ORDER BY hef.price ASC 
+   LIMIT ${pageSize} OFFSET ${offset};`;
 
   connection.query(query, 
     (err, data) => {
