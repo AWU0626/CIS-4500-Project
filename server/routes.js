@@ -38,6 +38,9 @@ const query5 = async function (req, res) {
   const numFaculty = req.query.num_faculty ? req.query.num_faculty : 1; 
   const startGrade = req.query.start_grade ? req.query.start_grade : 0;
   const endGrade = req.query.end_grade ? req.query.end_grade : 8;
+  const page = req.query.page ?? 1;
+  const pageSize = req.query.page_size ?? 10;
+  const offset = (page - 1) * pageSize;
 
   const query = `WITH RATIO_PER_SCHOOL AS (
     SELECT STATE, COUNTY, CITY, START_GRADE, END_GRADE, (ENROLLMENT / FT_TEACHER) AS ratio
@@ -89,7 +92,7 @@ SELECT round(CITY_AVG_RATIO, 2) AS CITY_AVG_RATIO,
    A.STATE, COUNTY, CITY
 FROM AVG_RATIO_CITYSTATE A JOIN EDUCATION_filtered E ON A.COUNTY = E.AREA_NAME AND A.STATE = E.STATE
 ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC
-LIMIT 20;`;
+LIMIT ${pageSize} OFFSET ${offset};`;
 
   connection.query(query, 
     (err, data) => {
