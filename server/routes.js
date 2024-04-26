@@ -80,7 +80,75 @@ const query4 = async function (req, res) {
 
 // Route 4: GET /query5
 const query5 = async function (req, res) {
-  res.status(200).json({ message: 'query 5!' })
+  const numStudent = req.query.num_student ? req.query.num_student : 20;
+  const numFaculty = req.query.num_faculty ? req.query.num_faculty : 1; 
+  const startGrade = req.query.start_grade ? req.query.start_grade : 0;
+  const endGrade = req.query.end_grade ? req.query.end_grade : 8;
+  const page = req.query.page ?? 1;
+  const pageSize = req.query.page_size ?? 10;
+  const offset = (page - 1) * pageSize;
+
+  const query = `WITH RATIO_PER_SCHOOL AS (
+    SELECT STATE, COUNTY, CITY, START_GRADE, END_GRADE, (ENROLLMENT / FT_TEACHER) AS ratio
+    FROM SCHOOL
+    WHERE FT_TEACHER <> 0 AND ENROLLMENT IS NOT NULL AND ENROLLMENT <> 0
+ ),
+ AVG_RATIO_STATE AS (
+     SELECT STATE, AVG(ratio) AS STATE_AVG_RATIO
+     FROM RATIO_PER_SCHOOL
+     WHERE ratio <= (${numStudent} / ${numFaculty})
+       AND START_GRADE >= (${startGrade}) AND  END_GRADE <= (${endGrade})
+     GROUP BY STATE
+ ),
+ AVG_RATIO_CITYSTATE AS (
+     SELECT COUNTY, CITY, AVG(ratio) AS CITY_AVG_RATIO, STATE, STATE_AVG_RATIO
+     FROM RATIO_PER_SCHOOL NATURAL JOIN AVG_RATIO_STATE
+     WHERE START_GRADE >= (${startGrade}) AND  END_GRADE <= (${endGrade})
+     GROUP BY CITY, STATE
+     ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO
+ ),
+ se2021 AS (
+     SELECT state, area_name, count
+     FROM EDUCATION
+     WHERE time = 2021
+       AND CASE
+               WHEN (${startGrade}) >= 0 AND (${endGrade}) <= 8 THEN EDUCATION_level = 'hs'
+               ELSE EDUCATION_level = '4_above'
+         END
+ ),
+ se2012 AS (
+     SELECT state, area_name, count
+     FROM EDUCATION
+     WHERE time = 2012
+       AND CASE
+               WHEN (${startGrade}) >= 0 AND (${endGrade}) <= 8 THEN EDUCATION_level = 'hs'
+               ELSE EDUCATION_level = '4_above'
+         END
+ ),
+ EDUCATION_filtered AS (
+     SELECT s1.state, s1.area_name,
+            round(((s1.count - s2.count) / s2.count), 2) AS AVG_HIGH_SCHOOL_GRAD_GROWTH
+     FROM se2021 s1 JOIN se2012 s2 ON s1.state = s2.state AND s1.area_name = s2.area_name
+     WHERE s1.count - s2.count > 0
+     GROUP BY s1.state, s1.area_name
+ )
+SELECT round(CITY_AVG_RATIO, 2) AS CITY_AVG_RATIO,
+   round(STATE_AVG_RATIO, 2) AS STATE_AVG_RATIO,
+   round(AVG_HIGH_SCHOOL_GRAD_GROWTH, 2) AS AVG_HIGH_SCHOOL_GRAD_GROWTH,
+   A.STATE, COUNTY, CITY
+FROM AVG_RATIO_CITYSTATE A JOIN EDUCATION_filtered E ON A.COUNTY = E.AREA_NAME AND A.STATE = E.STATE
+ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC
+LIMIT ${pageSize} OFFSET ${offset};`;
+
+  connection.query(query, 
+    (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json([]);
+    } else {
+      res.json(data);
+    }
+  });
 }
 
 // Route 5: GET /query6
