@@ -18,53 +18,59 @@ const mainpage = async function (req, res) {
 }
 
 // Route 1: GET /query1
-const query1And2 = async function (req, res) {
+const query1 = async function (req, res) {
+  res.status(200).json({ message: 'query 2!' })
+}
+
+// Route 2: GET /query2
+const query2 = async function (req, res) {
   res.status(200).json({ message: 'query 1!' })
 }
 
-// Route 2: GET /query3
+// Route 3: GET /query3
 const query3 = async function (req, res) {
   res.status(200).json({ message: 'query 3!' })
 }
 
-// Route 3: GET /query4
+// Route 4: GET /query4
 const query4 = async function (req, res) {
   res.status(200).json({ message: 'query 4!' })
 }
 
-// Route 4: GET /query5
+// Route 5: GET /query5
 const query5 = async function (req, res) {
   res.status(200).json({ message: 'query 5!' })
 }
 
-// Route 5: GET /query6
+// Route 6: GET /query6
 const query6 = async function (req, res) {
   res.status(200).json({ message: 'query 6!' })
 }
 
-// Route 6: GET /query7
+// Route 7: GET /query7
 const query7 = async function (req, res) {
   res.status(200).json({ message: 'query 7!' })
 }
 
-// Route 7: GET /query8
+// Route 8: GET /query8
 const query8 = async function (req, res) {
   res.status(200).json({ message: 'query 8!' })
 }
 
-// Route 8: GET /query9
+// Route 9: GET /query9
 const query9 = async function (req, res) {
   res.status(200).json({ message: 'query 9!' })
 }
 
-// Route 9: GET /query10
+// Route 10: GET /query10
 const query10 = async function (req, res) {
   res.status(200).json({ message: 'query 10!' })
 }
 
 module.exports = {
   mainpage,
-  query1And2,
+  query1,
+  query2,
   query3,
   query4,
   query5,
