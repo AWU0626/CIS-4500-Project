@@ -19,12 +19,12 @@ const mainpage = async function (req, res) {
 
 // Route 1: GET /query1
 const query1 = async function (req, res) {
-  res.status(200).json({ message: 'query 2!' })
+  res.status(200).json({ message: 'query 1!' })
 }
 
 // Route 2: GET /query2
 const query2 = async function (req, res) {
-  res.status(200).json({ message: 'query 1!' })
+  res.status(200).json({ message: 'query 2!' })
 }
 
 // Route 3: GET /query3
