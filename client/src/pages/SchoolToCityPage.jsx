@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { Button, Checkbox, Container, FormControlLabel, Grid, Link, Slider, TextField } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
+import CountyStateCard from '../components/CountyStateCard';
 
 const config = require('../config.json');
 
@@ -12,22 +13,36 @@ export default function SchoolToCityPage() {
     const [gradeRange, setGradeRange] = useState([0, 12]);
     const [numStudent, setNumStudent] = useState(20);
     const [numFaculty, setnumFaculty] = useState(1);
+    const [selectedState, setSelectedState] = useState(null);
+    const [selectedCounty, setSelectedCounty] = useState(null);
+
     const columns = [
-        { field: 'STATE', headerName: 'State' },
-        { field: 'COUNTY', headerName: 'County' },
-        { field: 'CITY', headerName: 'City' },
-        { field: 'CITY_AVG_RATIO', headerName: 'City Average Student to Faculty Ratio' },
-        { field: 'STATE_AVG_RATIO', headerName: 'State Average Student to Faculty Ratio' },
-        { field: 'AVG_HIGH_SCHOOL_GRAD_GROWTH', headerName: 'Average Highschool Graduation Growth' },
+        { field: 'STATE_COUNTY', headerName: 'State And County', width: 200, renderCell: (params) => (
+          <Link onClick={() => {
+            const s = params.row.STATE_COUNTY.split(' ');
+            setSelectedState(s[0]);
+            setSelectedCounty(s[1]);
+          }}>{params.value}</Link>
+      ) },
+        // { field: 'COUNTY', headerName: 'County' },
+        { field: 'CITY', headerName: 'City', width: 200 },
+        { field: 'CITY_AVG_RATIO', headerName: 'City Average Student to Faculty Ratio', width: 200 },
+        { field: 'STATE_AVG_RATIO', headerName: 'State Average Student to Faculty Ratio', width: 200 },
+        { field: 'AVG_HIGH_SCHOOL_GRAD_GROWTH', headerName: 'Average Highschool Graduation Growth', width: 200 },
       ]
 
     // gets results from query5  
     const fetchQuery5 = async () => {
         try {
             const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/cities/recommended/?num_student=${numStudent}&num_faculty=${numFaculty}&start_grade=${gradeRange[0]}&end_grade=${gradeRange[1]}&page=${page}&page_size=${pageSize}`);
-            const data = response.data.map((row, index) => ({ id: index, ...row }));
+
+            const data = response.data.map((row, index) => {
+              const { STATE, COUNTY, ...rest } = row;
+              return { id: index, STATE_COUNTY: `${row.STATE} ${row.COUNTY}`, ...rest };
+            });
+
             console.log(data);
-            setData(data);
+            setData(data)
         } catch (error) {
             console.error(error);
         }
@@ -35,6 +50,7 @@ export default function SchoolToCityPage() {
 
     return (
         <Container>
+        {selectedState && selectedCounty && <CountyStateCard state={selectedState} county={selectedCounty} handleClose={() => {setSelectedCounty(null); setSelectedState(null)}} />}
         <h2>Find Cities</h2>
         <Grid container spacing={2}>
         <Grid item xs={1}>
