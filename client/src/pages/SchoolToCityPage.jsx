@@ -1,36 +1,21 @@
 import { useEffect, useState } from "react";
 import axios from 'axios';
-import { Card, CardActionArea, CardContent, Typography, Button, Container, Grid, Link, Slider, TextField } from '@mui/material';
+import { Card, CardMedia, CardActionArea, CardContent, Typography, Button, Container, Grid, Link, Slider, TextField } from '@mui/material';
 import CountyStateCard from '../components/CountyStateCard';
-
+import NotAvail from '../images/PhotoNotAvailable.png'
 const config = require('../config.json');
+const configMap = require('../configMap.json');
 
 export default function SchoolToCityPage() {
   const [data, setData] = useState([]);
   const [page, setPage] = useState(1); // 1 indexed
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(3);
   const [gradeRange, setGradeRange] = useState([0, 12]);
   const [numStudent, setNumStudent] = useState(20);
   const [numFaculty, setnumFaculty] = useState(1);
   const [selectedState, setSelectedState] = useState(null);
   const [selectedCounty, setSelectedCounty] = useState(null);
-  const arr = ['hello', 'world'];
-  const columns = [
-    {
-      field: 'STATE_COUNTY', headerName: 'State And County', width: 200, renderCell: (params) => (
-        <Link onClick={() => {
-          const s = params.row.STATE_COUNTY.split(' ');
-          setSelectedState(s[0]);
-          setSelectedCounty(s[1]);
-        }}>{params.value}</Link>
-      )
-    },
-    // { field: 'COUNTY', headerName: 'County' },
-    { field: 'CITY', headerName: 'City', width: 200 },
-    { field: 'CITY_AVG_RATIO', headerName: 'City Average Student to Faculty Ratio', width: 200 },
-    { field: 'STATE_AVG_RATIO', headerName: 'State Average Student to Faculty Ratio', width: 200 },
-    { field: 'AVG_HIGH_SCHOOL_GRAD_GROWTH', headerName: 'Average Highschool Graduation Growth', width: 200 },
-  ]
+  const [images, setImages] = useState([]);
 
   // gets results from query5  
   const fetchQuery5 = async () => {
@@ -43,6 +28,19 @@ export default function SchoolToCityPage() {
       });
 
       console.log(data);
+      
+      const allphotos = await Promise.all(data.map(async (row, index) => {
+        const photo = await axios.get(`http://${config.server_host}:${config.server_port}/api/place_search/?address=${row.STATE_COUNTY},${row.CITY}&apikey=${configMap.apikey}`, { responseType: 'blob' });
+        if (photo.data.type === 'image/jpeg') {
+          console.log(photo.data);
+          const imageUrl = URL.createObjectURL(photo.data);
+          return imageUrl;
+        } else {
+          return '';
+        }
+      }));
+
+      setImages(allphotos);
       setData(data)
     } catch (error) {
       console.error(error);
@@ -104,21 +102,19 @@ export default function SchoolToCityPage() {
       <h2 align='center'>Results</h2>
       {/* Notice how similar the DataGrid component is to our LazyTable! What are the differences? */}
       <Grid container spacing={2}>
-        {data && data.map(row => {
+        {data && data.map((row, index) => {
           return <Grid item key={row.id} xs={12} sm={6} md={4}>
             <Card sx={{ maxWidth: 500 }}>
               <CardActionArea>
-                {/* <CardMedia
-            component="img"
-            height="140"
-            image="/static/images/cards/contemplative-reptile.jpg"
-            alt="green iguana"
-          /> */}
+                <CardMedia
+                  component="img"
+                  height="300"
+                  image={images[index].length != 0 ? images[index] : NotAvail}
+                  alt={`city photo ${index}`}
+                />
                 <CardContent>
-                  <Button onClick={() => handleClick(row.STATE_COUNTY)} fullWidth>
-                    <Typography gutterBottom variant='h4' component='div' >
-                      {row.STATE_COUNTY}
-                    </Typography>
+                  <Button onClick={() => handleClick(row.STATE_COUNTY)} fullWidth style={{ textAlign: 'left', fontSize: '2em', margin: '0' }}>
+                    {row.STATE_COUNTY}
                   </Button>
                   <Typography gutterBottom variant='h7' align='center' component='div' color="text.secondary">
                     {row.CITY}
