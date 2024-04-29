@@ -48,7 +48,53 @@ order by e1.TIME, e1.STATE, e1.AREA_NAME;`;
 
 // Route 2: GET /query3
 const query3 = async function (req, res) {
-  res.status(200).json({ message: 'query 3!' })
+  const priceMin = req.query.price_min ? req.query.price_min : 10000;
+  const priceMax = req.query.price_max ? req.query.price_max : 600000; 
+  const page = req.query.page ?? 1;
+  const pageSize = req.query.page_size ?? 10;
+  const offset = (page - 1) * pageSize;
+
+  const query = `WITH se2021 AS (
+    SELECT e.ID, e.STATE, e.AREA_NAME, e.COUNT AS year21Count
+    FROM EDUCATION e
+    WHERE time = 2021
+      AND education_level LIKE '4_above'
+   ), se2012 AS (
+    SELECT e.STATE, e.AREA_NAME, e.COUNT AS year12Count
+    FROM EDUCATION e
+    WHERE time = 2012
+      AND education_level LIKE '4_above'
+   ), edu_filtered AS (
+      SELECT s21.STATE,
+              round(((sum(year21Count) - SUM(year12Count)) / SUM(year12Count)), 2) AS avg_higher_edu_growth
+      FROM se2021 s21
+          JOIN se2012 s12 ON s12.AREA_NAME = s21.AREA_NAME
+          AND s12.STATE = s21.STATE
+   
+   
+      GROUP BY s21.state
+      ORDER BY avg_higher_edu_growth DESC
+      LIMIT 20
+   ), house_edu_filtered AS (
+    SELECT h.house_id, h.bed, h.bath, h.city, h.zip_code, h.house_size, h.price, ef.*
+    FROM  REAL_ESTATE h
+    JOIN edu_filtered ef ON ef.state = h.state
+    WHERE h.price <= ${priceMax} AND h.price > ${priceMin}
+   )
+   SELECT *
+   FROM house_edu_filtered hef
+   ORDER BY hef.price ASC 
+   LIMIT ${pageSize} OFFSET ${offset};`;
+
+  connection.query(query, 
+    (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.json([]);
+    } else {
+      res.json(data);
+    }
+  });
 }
 
 // Route 3: GET /query4
@@ -131,7 +177,112 @@ LIMIT ${pageSize} OFFSET ${offset};`;
 
 // Route 5: GET /query6
 const query6 = async function (req, res) {
-  res.status(200).json({ message: 'query 6!' })
+  const minStartGrade = req.params.min_start_grade ?? 0;
+  const maxEndGrade = req.params.max_end_grade ?? 12;
+  const minEnrollment = req.params.min_enrollment ?? 0;
+  const numChildren = req.params.num_children ?? 1;
+
+  // pages
+  const page = req.params.page ?? 2;
+  const pageSize = req.params.page_size ?? 10;
+
+  if (!page) {
+    const sqlQueryNoLimit = `
+      SELECT *
+      FROM (
+        SELECT fs.SCHOOL_ID, fs.NAME, fs.STATE, fs.CITY, fs.COUNTY, fs.ADDRESS,
+                fs.START_GRADE, fs.END_GRADE, fs.ENROLLMENT,
+                eh.hs_below, eh.4_below, eh.hs, eh.4_above,
+                hd.avg_price, hd.avg_house_size, hd.avg_bed, hd.avg_bath,
+                ROW_NUMBER() OVER(PARTITION BY fs.STATE
+                    ORDER BY (
+                          eh.4_above - eh.4_below) DESC,
+                          hd.avg_price ASC,
+                          hd.avg_house_size DESC,
+                          hd.avg_bed DESC,
+                          hd.avg_bath DESC
+                    ) as rn
+        FROM (
+            SELECT s.SCHOOL_ID, s.NAME, s.STATE, s.CITY, s.COUNTY, s.ADDRESS,
+            s.START_GRADE, s.END_GRADE, s.ENROLLMENT
+            FROM SCHOOL s
+            WHERE
+            s.START_GRADE >= ${minStartGrade} AND
+            s.END_GRADE <=  ${maxEndGrade} AND
+            s.ENROLLMENT >= ${minEnrollment}
+        ) as fs
+            JOIN education_history_perYear eh ON fs.STATE = eh.STATE AND eh.AREA_NAME = fs.COUNTY
+            JOIN housing_data_averages hd ON fs.STATE = hd.STATE AND fs.CITY = hd.CITY
+        WHERE
+            (eh.4_above - eh.4_below) > 0 AND
+            hd.avg_bed >= (${numChildren} / 2)
+      ) t
+      WHERE rn <= 3
+      ORDER BY
+        (4_above - 4_below) DESC,
+        avg_price ASC,
+        avg_house_size DESC,
+        avg_bed DESC,
+        avg_bath DESC;`;
+    connection.query(sqlQueryNoLimit, (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json([]);
+      } else {
+        res.json(data);
+      }
+    });
+  } else {
+    const offset = (page - 1) * pageSize;
+
+    const sqlQueryWithLimit = `
+      SELECT *
+      FROM (
+        SELECT fs.SCHOOL_ID, fs.NAME, fs.STATE, fs.CITY, fs.COUNTY, fs.ADDRESS,
+                fs.START_GRADE, fs.END_GRADE, fs.ENROLLMENT,
+                eh.hs_below, eh.4_below, eh.hs, eh.4_above,
+                hd.avg_price, hd.avg_house_size, hd.avg_bed, hd.avg_bath,
+                ROW_NUMBER() OVER(PARTITION BY fs.STATE
+                    ORDER BY (
+                          eh.4_above - eh.4_below) DESC,
+                          hd.avg_price ASC,
+                          hd.avg_house_size DESC,
+                          hd.avg_bed DESC,
+                          hd.avg_bath DESC
+                    ) as rn
+        FROM (
+            SELECT s.SCHOOL_ID, s.NAME, s.STATE, s.CITY, s.COUNTY, s.ADDRESS,
+            s.START_GRADE, s.END_GRADE, s.ENROLLMENT
+            FROM SCHOOL s
+            WHERE
+            s.START_GRADE >= ${minStartGrade} AND
+            s.END_GRADE <=  ${maxEndGrade} AND
+            s.ENROLLMENT >= ${minEnrollment}
+        ) as fs
+            JOIN education_history_perYear eh ON fs.STATE = eh.STATE AND eh.AREA_NAME = fs.COUNTY
+            JOIN housing_data_averages hd ON fs.STATE = hd.STATE AND fs.CITY = hd.CITY
+        WHERE
+            (eh.4_above - eh.4_below) > 0 AND
+            hd.avg_bed >= (${numChildren} / 2)
+      ) t
+      WHERE rn <= 3
+      ORDER BY
+        (4_above - 4_below) DESC,
+        avg_price ASC,
+        avg_house_size DESC,
+        avg_bed DESC,
+        avg_bath DESC
+      LIMIT ${pageSize} OFFSET ${offset}`;
+    connection.query(sqlQueryWithLimit, (err, data) => {
+      if (err || data.length === 0) {
+        console.log(err);
+        res.json([]);
+      } else {
+        res.json(data);
+        console.log(res[0]);
+      }
+    });
+  }
 }
 
 // Route 6: GET /query7
