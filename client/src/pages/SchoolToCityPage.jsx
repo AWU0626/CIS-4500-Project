@@ -13,7 +13,6 @@ export default function SchoolToCityPage() {
     const [gradeRange, setGradeRange] = useState([0, 12]);
     const [numStudent, setNumStudent] = useState(20);
     const [numFaculty, setnumFaculty] = useState(1);
-    const [selectedStateCounty, setSelectedStateCounty] = useState(null);
     const [selectedState, setSelectedState] = useState(null);
     const [selectedCounty, setSelectedCounty] = useState(null);
 
@@ -51,7 +50,7 @@ export default function SchoolToCityPage() {
 
     return (
         <Container>
-        {selectedState && selectedCounty && <CountyStateCard state={selectedState} county={selectedCounty} handleClose={() => setSelectedStateCounty(null)} />}
+        {selectedState && selectedCounty && <CountyStateCard state={selectedState} county={selectedCounty} handleClose={() => {setSelectedCounty(null); setSelectedState(null)}} />}
         <h2>Find Cities</h2>
         <Grid container spacing={2}>
         <Grid item xs={1}>
