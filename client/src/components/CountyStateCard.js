@@ -14,7 +14,7 @@ export default function CountyStateCard({ state, county, handleClose }) {
         const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/education/${state}/${county}`);
         console.log(response.data);
         const data = response.data.map(row => ({
-            name: row.TIME,
+            time: row.TIME,
             hs_below: row.hs_below,
             hs: row.hs,
             below_4: row['4_below'],
@@ -46,35 +46,33 @@ export default function CountyStateCard({ state, county, handleClose }) {
         p={3}
         style={{ background: 'white', borderRadius: '16px', border: '2px solid #000', width: 600 }}
       >
-        <h1>{countyStateData.title}</h1>
-        
-        <p>Tempo: {countyStateData.tempo} bpm</p>
-        <p>Key: {countyStateData.key_mode}</p>
         <ButtonGroup>
           <Button disabled={barRadar} onClick={handleGraphChange}>Bar</Button>
-          <Button disabled={!barRadar} onClick={handleGraphChange}>Radar</Button>
+          <Button disabled={!barRadar} onClick={handleGraphChange}>Time Graph</Button>
         </ButtonGroup>
         <div style={{ margin: 20 }}>
           { // This ternary statement returns a BarChart if barRadar is true, and a RadarChart otherwise
             barRadar
               ? (
                 <ResponsiveContainer height={250}>
-                  <BarChart
-                    data={countyStateData}
-                    layout='vertical'
-                    margin={{ left: 40 }}
-                  >
-                    <XAxis type='number' domain={[0, 1]} />
-                    <YAxis type='category' dataKey='name' />
-                    <Bar dataKey='value' stroke='#8884d8' fill='#8884d8' />
-                  </BarChart>
+                  <BarChart width={730} height={250} data={countyStateData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="time" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="hs_below" fill="#8884d8" />
+                    <Bar dataKey="hs" fill="#82ca9d" />
+                    <Bar dataKey="below_4" fill="#82c2ca" />
+                    <Bar dataKey="above_4" fill="#ca82c9" />
+                    </BarChart>
                 </ResponsiveContainer>
               ) : (
                 <ResponsiveContainer height={250}>
                   <LineChart width={730} height={250} data={countyStateData}
                     margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
+                        <XAxis dataKey="time" />
                         <YAxis />
                         <Tooltip />
                         <Legend />
