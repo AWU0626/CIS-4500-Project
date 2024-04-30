@@ -10,7 +10,7 @@ export default function HomePage() {
   // just retrieves home page message
   const fetchHome = async () => {
     try {
-      const response = await axios.get(`http://${config.server_host}:${config.server_port}/`);
+      const response = await axios.get(`http://${config.server_host}:${config.server_port}/api`);
       setHomeTitle(response.data.message);
     } catch (error) {
         console.error('Error fetching home page message:', error);
