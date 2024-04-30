@@ -19,10 +19,12 @@ const mainpage = async function (req, res) {
 
 // Route 1: GET /query1
 const query1 = async function (req, res) {
+  const page = req.query.page ?? 1;
   const query = `
 select e1.ID as ID, e1.STATE as STATE, e1.AREA_NAME as AREA_NAME, e1.TIME as TIME, e1.COUNT as hs_below, e2.COUNT as hs, e3.COUNT as 4_below, e4.COUNT as 4_above
 from EDUCATION e1 join EDUCATION e2 join EDUCATION e3 join EDUCATION e4 on e1.STATE = e2.STATE and e2.STATE = e3.STATE and e3.STATE = e4.STATE and e1.AREA_NAME = e2.AREA_NAME and e2.AREA_NAME = e3.AREA_NAME and e3.AREA_NAME = e4.AREA_NAME and e1.TIME = e2.TIME and e2.TIME = e3.TIME and e3.TIME = e4.TIME and e1.EDUCATION_LEVEL='hs_below' and e2.EDUCATION_LEVEL='hs' and e3.EDUCATION_LEVEL='4_below' and e4.EDUCATION_LEVEL='4_above'
-order by e1.TIME, e1.STATE, e1.AREA_NAME`
+order by e1.STATE, e1.AREA_NAME, e1.TIME
+limit 10 offset ${(page - 1) * 10};`
   connection.query(query, (err, data) => {
     if (err) {
       console.log(err)
