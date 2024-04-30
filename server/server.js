@@ -12,7 +12,7 @@ app.use(cors({
 // provide their handlers that we implemented in routes.js
 app.get('/api/', routes.mainpage)
 app.get('/api/areas/cities/education/', routes.query1)
-app.get('/api/areas/cities/education/:state/:city', routes.query2)
+app.get('/api/areas/cities/education/specific/', routes.query2)
 app.get('/api/houses/growing/', routes.query3)
 app.get('/api/schools/ratio/', routes.query4)
 app.get('/api/areas/cities/recommended/', routes.query5)
