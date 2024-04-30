@@ -87,7 +87,7 @@ export default function SchoolToCityPage() {
           <TextField label='number of students' value={numStudent} onChange={(e) => {
             const num = e.target.value;
             if (!isNaN(num)) {
-              setNumStudent(parseInt(num));
+              setNumStudent(num === '' ? '' : parseInt(num));
             } else {
               setNumStudent(numStudent); // if types NaN then set it to what it is already
             }
@@ -97,7 +97,7 @@ export default function SchoolToCityPage() {
           <TextField label='number of faculty' value={numFaculty} onChange={(e) => {
             const num = e.target.value;
             if (!isNaN(num)) {
-              setnumFaculty(parseInt(num));
+              setnumFaculty(num === '' ? '' : parseInt(num));
             } else {
               setnumFaculty(numFaculty);  // if types NaN then set it to what it is already
             }
