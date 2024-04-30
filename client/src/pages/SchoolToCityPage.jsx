@@ -2,33 +2,44 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { Card, CardMedia, CardActionArea, CardContent, Typography, Button, Container, Grid, Link, Slider, TextField } from '@mui/material';
 import CountyStateCard from '../components/CountyStateCard';
+import PageNavigator from '../components/PageNavigator';
 import NotAvail from '../images/PhotoNotAvailable.png'
 const config = require('../config.json');
 const configMap = require('../configMap.json');
 
 export default function SchoolToCityPage() {
   const [data, setData] = useState([]);
-  const [page, setPage] = useState(1); // 1 indexed
-  const [pageSize, setPageSize] = useState(3);
   const [gradeRange, setGradeRange] = useState([0, 12]);
   const [numStudent, setNumStudent] = useState(20);
   const [numFaculty, setnumFaculty] = useState(1);
   const [selectedState, setSelectedState] = useState(null);
   const [selectedCounty, setSelectedCounty] = useState(null);
   const [images, setImages] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); // 1 indexed
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 3; // limit to 9 because google maps api is expensive
 
   // gets results from query5  
-  const fetchQuery5 = async () => {
+  const fetchQuery5 = async (currPage) => {
     try {
-      const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/cities/recommended/?num_student=${numStudent}&num_faculty=${numFaculty}&start_grade=${gradeRange[0]}&end_grade=${gradeRange[1]}&page=${page}&page_size=${pageSize}`);
+      const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/cities/recommended/?num_student=${numStudent}&num_faculty=${numFaculty}&start_grade=${gradeRange[0]}&end_grade=${gradeRange[1]}`);
+      const offset = (currPage - 1) * pageSize;
+      const slicedData = response.data.slice(offset, offset + pageSize);
+      const numResults = response.data.length;
+      setTotalPages(Math.ceil(numResults/pageSize));
+      
+      console.log('currentPage: ' + currPage);
+      console.log('offset: ' + offset);
+      console.log('total pages: ' + Math.ceil(numResults/pageSize));
+      console.log(slicedData);
 
-      const data = response.data.map((row, index) => {
+      const data = slicedData.map((row, index) => {
         const { STATE, COUNTY, ...rest } = row;
         return { id: index, STATE_COUNTY: `${row.STATE}, ${row.COUNTY}`, ...rest };
       });
 
       console.log(data);
-      
+
       const allphotos = await Promise.all(data.map(async (row, index) => {
         const photo = await axios.get(`http://${config.server_host}:${config.server_port}/api/place_search/?address=${row.STATE_COUNTY},${row.CITY}&apikey=${configMap.apikey}`, { responseType: 'blob' });
         if (photo.data.type === 'image/jpeg') {
@@ -53,6 +64,11 @@ export default function SchoolToCityPage() {
     setSelectedState(s[0].trim());
     setSelectedCounty(s[1].trim());
     console.log(`Clicked on card with state-county: ${STATE_COUNTY}`);
+  };
+
+  const handlePageChange = async (pageNumber) => {
+    setCurrentPage(pageNumber);
+    await fetchQuery5(pageNumber);
   };
 
   return (
@@ -95,7 +111,7 @@ export default function SchoolToCityPage() {
         </div>
       </Grid>
       <Grid item>
-        <Button fullWidth onClick={() => fetchQuery5()} style={{ left: '50%', transform: 'translateX(-50%)' }}>
+        <Button fullWidth onClick={() => fetchQuery5(currentPage)} style={{ left: '50%', transform: 'translateX(-50%)' }}>
           Search
         </Button>
       </Grid>
@@ -119,6 +135,7 @@ export default function SchoolToCityPage() {
                   <Typography gutterBottom variant='h7' align='center' component='div' color="text.secondary">
                     {row.CITY}
                   </Typography>
+                  <Typography variant='subtitle' align='left' component='div'>Student to Faculty Ratio:</Typography>
                   <Typography variant='subtitle' align='left' component='div'>Ratio in city: {row.CITY_AVG_RATIO}</Typography>
                   <Typography variant='subtitle' align='left' component='div'>Ratio in state: {row.STATE_AVG_RATIO}</Typography>
                   <Typography variant='subtitle' align='left' component='div'>Average Graduation Growth: {row.AVG_HIGH_SCHOOL_GRAD_GROWTH}</Typography>
@@ -128,6 +145,13 @@ export default function SchoolToCityPage() {
           </Grid>
         })}
       </Grid>
+      <div align='center'>
+        <PageNavigator
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </div>
     </Container>
   );
 }
