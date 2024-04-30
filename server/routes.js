@@ -324,8 +324,8 @@ where PRICE between ${minPrice} AND ${maxPrice}
 AND STATE = '${state}'
 AND BED >= ${minBeds}
 AND BATH >= ${minBaths}
-ORDER BY PRICE;
-LIMIT 10 OFFSET ${(page - 1) * 10}`
+ORDER BY PRICE
+LIMIT 10 OFFSET ${(page - 1) * 10};`
     connection.query(query, (err, data) => {
         if (err) {
         console.log(err)
@@ -338,7 +338,25 @@ LIMIT 10 OFFSET ${(page - 1) * 10}`
 
 // Route 10: GET /query10
 const query10 = async function (req, res) {
-  res.status(200).json({ message: 'query 10!' })
+  const state = req.query.state
+  const minPrice = req.query.min_price ? req.query.min_price : 0;
+  const maxPrice = req.query.max_price ? req.query.max_price : 1000000000;
+  const page = req.query.page ?? 1;
+  const query = `select ZIP_CODE, AVG(PRICE) AS AVG_PRICE
+from REAL_ESTATE
+WHERE STATE = '${state}'
+GROUP BY ZIP_CODE
+HAVING AVG(PRICE) BETWEEN ${minPrice} AND ${maxPrice}
+ORDER BY AVG_PRICE
+LIMIT 10 OFFSET ${(page - 1) * 10};`
+    connection.query(query, (err, data) => {
+        if (err) {
+        console.log(err)
+        res.status(500).json({ error: 'Failed to query database' })
+        } else {
+        res.status(200).json(data)
+        }
+    })
 }
 
 module.exports = {
