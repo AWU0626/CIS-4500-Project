@@ -17,7 +17,7 @@ export default function SchoolToCityPage() {
   const [images, setImages] = useState([]);
   const [currentPage, setCurrentPage] = useState(1); // 1 indexed
   const [totalPages, setTotalPages] = useState(1);
-  const pageSize = 3; // limit to 9 because google maps api is expensive
+  const pageSize = 9; // limit to 9 because google maps api is expensive
 
   // gets results from query5  
   const fetchQuery5 = async (currPage) => {
@@ -40,18 +40,25 @@ export default function SchoolToCityPage() {
 
       console.log(data);
 
-      const allphotos = await Promise.all(data.map(async (row, index) => {
-        const photo = await axios.get(`http://${config.server_host}:${config.server_port}/api/place_search/?address=${row.STATE_COUNTY},${row.CITY}&apikey=${configMap.apikey}`, { responseType: 'blob' });
-        if (photo.data.type === 'image/jpeg') {
-          console.log(photo.data);
-          const imageUrl = URL.createObjectURL(photo.data);
-          return imageUrl;
-        } else {
-          return '';
+      if (configMap.apikey.length !== 0) {
+        const allphotos = await Promise.all(data.map(async (row, index) => {
+          const photo = await axios.get(`http://${config.server_host}:${config.server_port}/api/place_search/?address=${row.STATE_COUNTY},${row.CITY}&apikey=${configMap.apikey}`, { responseType: 'blob' });
+          if (photo.data.type === 'image/jpeg') {
+            console.log(photo.data);
+            const imageUrl = URL.createObjectURL(photo.data);
+            return imageUrl;
+          } else {
+            return '';
+          }
+        }));
+        setImages(allphotos);
+      } else {
+        const emptyPhotos = [];
+        for (let i = 0; i < pageSize; i++) {
+          emptyPhotos.push('');
         }
-      }));
-
-      setImages(allphotos);
+        setImages(emptyPhotos);
+      }
       setData(data)
     } catch (error) {
       console.error(error);
