@@ -15,45 +15,58 @@ connection.connect((err) => err && console.log(err))
 console.log('Connected to MySQL database')
 // Route: GET / - sends message to the main page
 const mainpage = async function (req, res) {
-  res.status(200).json({ message: 'Welcome to the Home Page' })
+  res.status(200).json({ message: 'Welcome to the main page!' })
 }
 
 // Route 1: GET /query1
-const query1And2 = async function (req, res) {
-  res.status(200).json({ message: 'query 1!' })
+const query1 = async function (req, res) {
+  const page = req.query.page ?? 1
+  const query = `
+select e1.ID as ID, e1.STATE as STATE, e1.AREA_NAME as AREA_NAME, e1.TIME as TIME, e1.COUNT as hs_below, e2.COUNT as hs, e3.COUNT as 4_below, e4.COUNT as 4_above
+from EDUCATION e1 join EDUCATION e2 join EDUCATION e3 join EDUCATION e4 on e1.STATE = e2.STATE and e2.STATE = e3.STATE and e3.STATE = e4.STATE and e1.AREA_NAME = e2.AREA_NAME and e2.AREA_NAME = e3.AREA_NAME and e3.AREA_NAME = e4.AREA_NAME and e1.TIME = e2.TIME and e2.TIME = e3.TIME and e3.TIME = e4.TIME and e1.EDUCATION_LEVEL='hs_below' and e2.EDUCATION_LEVEL='hs' and e3.EDUCATION_LEVEL='4_below' and e4.EDUCATION_LEVEL='4_above'
+order by e1.STATE, e1.AREA_NAME, e1.TIME
+limit 10 offset ${(page - 1) * 10};`
+  connection.query(query, (err, data) => {
+    if (err) {
+      console.log(err)
+      res.status(500).json({ error: 'Failed to query database' })
+    } else {
+      res.status(200).json(data)
+    }
+  })
 }
 
-// Route 1.2: GET /query2
+// Route 2: GET /query2
 const query2 = async function (req, res) {
-  const state = req.params.state;
-  const county = req.params.county;
+  const state = req.params.state
+  const county = req.params.county
 
   const query = `with specific_area as
-  (select *
-   from EDUCATION
-   where EDUCATION.STATE = '${state}' and EDUCATION.AREA_NAME = '${county}')
-select e1.ID as ID, e1.STATE as STATE, e1.AREA_NAME as AREA_NAME, e1.TIME as TIME, e1.COUNT as hs_below, e2.COUNT as hs, e3.COUNT as 4_below, e4.COUNT as 4_above
-from specific_area e1 join specific_area e2 join specific_area e3 join specific_area e4 on e1.STATE = e2.STATE and e2.STATE = e3.STATE and e3.STATE = e4.STATE and e1.AREA_NAME = e2.AREA_NAME and e2.AREA_NAME = e3.AREA_NAME and e3.AREA_NAME = e4.AREA_NAME and e1.TIME = e2.TIME and e2.TIME = e3.TIME and e3.TIME = e4.TIME and e1.EDUCATION_LEVEL='hs_below' and e2.EDUCATION_LEVEL='hs' and e3.EDUCATION_LEVEL='4_below' and e4.EDUCATION_LEVEL='4_above'
-order by e1.TIME, e1.STATE, e1.AREA_NAME;`;
+                        (select *
+                         from EDUCATION
+                         where EDUCATION.STATE = '${state}' and EDUCATION.AREA_NAME = '${county}')
+                 select e1.ID as ID, e1.STATE as STATE, e1.AREA_NAME as AREA_NAME, e1.TIME as TIME, e1.COUNT as hs_below, e2.COUNT as hs, e3.COUNT as 4_below, e4.COUNT as 4_above
+                 from specific_area e1 join specific_area e2 join specific_area e3 join specific_area e4 on e1.STATE = e2.STATE and e2.STATE = e3.STATE and e3.STATE = e4.STATE and e1.AREA_NAME = e2.AREA_NAME and e2.AREA_NAME = e3.AREA_NAME and e3.AREA_NAME = e4.AREA_NAME and e1.TIME = e2.TIME and e2.TIME = e3.TIME and e3.TIME = e4.TIME and e1.EDUCATION_LEVEL='hs_below' and e2.EDUCATION_LEVEL='hs' and e3.EDUCATION_LEVEL='4_below' and e4.EDUCATION_LEVEL='4_above'
+                 order by e1.TIME, e1.STATE, e1.AREA_NAME;`
 
-  connection.query(query, 
+  connection.query(query,
     (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json([]);
-    } else {
-      res.json(data);
-    }
-  });
+      if (err || data.length === 0) {
+        console.log(err)
+        res.json([])
+      } else {
+        res.json(data)
+      }
+    })
 }
 
-// Route 2: GET /query3
+// Route 3: GET /query3
 const query3 = async function (req, res) {
-  const priceMin = req.query.price_min ? req.query.price_min : 10000;
-  const priceMax = req.query.price_max ? req.query.price_max : 600000; 
-  const page = req.query.page ?? 1;
-  const pageSize = req.query.page_size ?? 10;
-  const offset = (page - 1) * pageSize;
+  const priceMin = req.query.price_min ? req.query.price_min : 10000
+  const priceMax = req.query.price_max ? req.query.price_max : 600000
+  const page = req.query.page ?? 1
+  const pageSize = req.query.page_size ?? 10
+  const offset = (page - 1) * pageSize
 
   const query = `WITH se2021 AS (
     SELECT e.ID, e.STATE, e.AREA_NAME, e.COUNT AS year21Count
@@ -85,25 +98,42 @@ const query3 = async function (req, res) {
    SELECT *
    FROM house_edu_filtered hef
    ORDER BY hef.price ASC 
-   LIMIT ${pageSize} OFFSET ${offset};`;
+   LIMIT ${pageSize} OFFSET ${offset};`
 
-  connection.query(query, 
+  connection.query(query,
     (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json([]);
-    } else {
-      res.json(data);
-    }
-  });
+      if (err || data.length === 0) {
+        console.log(err)
+        res.json([])
+      } else {
+        res.json(data)
+      }
+    })
 }
 
-// Route 3: GET /query4
+// Route 4: GET /query4
 const query4 = async function (req, res) {
-  res.status(200).json({ message: 'query 4!' })
+  const state = req.query.state
+  const city = req.query.city
+  const startGrade = req.query.start_grade ? req.query.start_grade : 1
+  const endGrade = req.query.end_grade ? req.query.end_grade : 12
+  const query = `SELECT school_id, state, city, start_grade, county, zip, address, name, start_grade, end_grade, enrollment,
+     round(enrollment / ft_teacher, 1) AS student_teacher_ratio
+FROM SCHOOL
+WHERE state = '${state}' AND city = '${city}' AND start_grade >= ${startGrade} AND end_grade <= ${endGrade}
+ORDER BY student_teacher_ratio ASC
+limit 10;`
+  connection.query(query, (err, data) => {
+    if (err) {
+      console.log(err)
+      res.status(500).json({ error: 'Failed to query database' })
+    } else {
+      res.status(200).json(data)
+    }
+  })
 }
 
-// Route 4: GET /query5
+// Route 5: GET /query5
 const query5 = async function (req, res) {
   const numStudent = req.query.num_student ? req.query.num_student : 20;
   const numFaculty = req.query.num_faculty ? req.query.num_faculty : 1; 
@@ -161,27 +191,27 @@ SELECT round(CITY_AVG_RATIO, 2) AS CITY_AVG_RATIO,
 FROM AVG_RATIO_CITYSTATE A JOIN EDUCATION_filtered E ON A.COUNTY = E.AREA_NAME AND A.STATE = E.STATE
 ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC;`;
 
-  connection.query(query, 
+  connection.query(query,
     (err, data) => {
-    if (err || data.length === 0) {
-      console.log(err);
-      res.json([]);
-    } else {
-      res.json(data);
-    }
-  });
+      if (err || data.length === 0) {
+        console.log(err)
+        res.json([])
+      } else {
+        res.json(data)
+      }
+    })
 }
 
-// Route 5: GET /query6
+// Route 6: GET /query6
 const query6 = async function (req, res) {
-  const minStartGrade = req.params.min_start_grade ?? 0;
-  const maxEndGrade = req.params.max_end_grade ?? 12;
-  const minEnrollment = req.params.min_enrollment ?? 0;
-  const numChildren = req.params.num_children ?? 1;
+  const minStartGrade = req.params.min_start_grade ?? 0
+  const maxEndGrade = req.params.max_end_grade ?? 12
+  const minEnrollment = req.params.min_enrollment ?? 0
+  const numChildren = req.params.num_children ?? 1
 
   // pages
-  const page = req.params.page ?? 2;
-  const pageSize = req.params.page_size ?? 10;
+  const page = req.params.page ?? 2
+  const pageSize = req.params.page_size ?? 10
 
   if (!page) {
     const sqlQueryNoLimit = `
@@ -220,17 +250,17 @@ const query6 = async function (req, res) {
         avg_price ASC,
         avg_house_size DESC,
         avg_bed DESC,
-        avg_bath DESC;`;
+        avg_bath DESC;`
     connection.query(sqlQueryNoLimit, (err, data) => {
       if (err || data.length === 0) {
-        console.log(err);
-        res.json([]);
+        console.log(err)
+        res.json([])
       } else {
-        res.json(data);
+        res.json(data)
       }
-    });
+    })
   } else {
-    const offset = (page - 1) * pageSize;
+    const offset = (page - 1) * pageSize
 
     const sqlQueryWithLimit = `
       SELECT *
@@ -269,40 +299,229 @@ const query6 = async function (req, res) {
         avg_house_size DESC,
         avg_bed DESC,
         avg_bath DESC
-      LIMIT ${pageSize} OFFSET ${offset}`;
+      LIMIT ${pageSize} OFFSET ${offset}`
     connection.query(sqlQueryWithLimit, (err, data) => {
       if (err || data.length === 0) {
-        console.log(err);
-        res.json([]);
+        console.log(err)
+        res.json([])
       } else {
-        res.json(data);
-        console.log(res[0]);
+        res.json(data)
+        console.log(res[0])
       }
-    });
+    })
   }
 }
 
-// Route 6: GET /query7
-const query7 = async function (req, res) {
-  res.status(200).json({ message: 'query 7!' })
+// Route 7: GET /api/areas/zips/recommended/
+const query7 = async function(req, res) {
+  const page = req.query.page;
+  const pageSize = req.query.page_size ?? 10;
+  const offset = (page - 1) * pageSize;
+
+  const state = req.params.state;
+  const price_min = req.query.price_min ?? 50000;
+  const price_max = req.query.price_max ?? 1000000;
+  const beds_min = req.query.beds_min ?? 1;
+  const baths_min = req.query.baths_min ?? 1;
+  const enrollment_min = req.query.enrollment_min ?? 800;
+  const teachers_min = req.query.teachers_min ?? 20;
+  const start_grade = req.query.start_grade ?? 1;
+
+  const query = `
+    SELECT r.CITY, r.ZIP_CODE,
+      AVG(r.PRICE) as AVG_PRICE, AVG(r.BED) as AVG_BED,
+      AVG(r.BATH) as AVG_BATH, COUNT(DISTINCT r.HOUSE_ID) as TOTAL_HOUSES,
+      COUNT(DISTINCT s.SCHOOL_ID) as TOTAL_SCHOOLS, AVG(st.STUDENT_TEACHER_RATIO) as AVG_STUDENT_TEACHER_RATIO
+    FROM (
+      SELECT *
+      FROM REAL_ESTATE
+      WHERE STATE = ?
+      AND PRICE BETWEEN ? AND ?
+      AND BED >= ?
+      AND BATH >= ?
+    ) r
+    JOIN (
+      SELECT *
+      FROM SCHOOL
+      WHERE ENROLLMENT >= ?
+      AND FT_TEACHER >= ?
+      AND START_GRADE >= ?
+    ) s ON r.STATE = s.STATE AND r.CITY = s.CITY AND r.ZIP_CODE = s.ZIP
+    JOIN (
+      SELECT SCHOOL_ID, ENROLLMENT/FT_TEACHER as STUDENT_TEACHER_RATIO
+      FROM SCHOOL
+    ) st ON s.SCHOOL_ID = st.SCHOOL_ID
+    GROUP BY r.CITY, r.ZIP_CODE
+    HAVING COUNT(DISTINCT r.HOUSE_ID) > 0 AND COUNT(DISTINCT s.SCHOOL_ID) > 0
+    ORDER BY TOTAL_HOUSES DESC,
+            TOTAL_SCHOOLS DESC,
+            AVG_PRICE ASC,
+            AVG_BED DESC,
+            AVG_BATH DESC,
+            AVG_STUDENT_TEACHER_RATIO ASC
+    LIMIT ${pageSize} OFFSET ${offset};
+  `;
+
+  connection.query(query, [state, price_min, price_max, beds_min, baths_min, enrollment_min, 
+    teachers_min, start_grade, pageSize, offset], (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.status(500).json({ error: 'An error occurred while processing this request' });
+    } else {
+      res.json(data);
+    }
+  });
 }
 
-// Route 7: GET /query8
-const query8 = async function (req, res) {
-  res.status(200).json({ message: 'query 8!' })
+// Route 8: GET /query8
+const query8 = async function(req, res) {
+  const price_min = req.query.price_min ?? 100000;
+  const price_max = req.query.price_max ?? 600000;
+  const P = req.query.P;
+  const S = req.query.S;
+
+  let spacePerPerson;
+  if (S === 'small') {
+    spacePerPerson = 150;
+  } else if (S === 'medium') {
+    spacePerPerson = 250;
+  } else if (S === 'large') {
+    spacePerPerson = 450;
+  } else {
+    return res.status(400).json({ error: 'Invalid value for S. It should be either "small", "medium", or "large".' });
+  }
+
+  const query = `
+  WITH query3 AS (
+    WITH se2021 AS (
+ SELECT e.ID, e.STATE, e.AREA_NAME, e.COUNT AS year21Count
+ FROM EDUCATION e
+ WHERE time = 2021
+   AND education_level LIKE '4_above'
+ ), se2012 AS (
+ SELECT e.STATE, e.AREA_NAME, e.COUNT AS year12Count
+ FROM EDUCATION e
+ WHERE time = 2012
+   AND education_level LIKE '4_above'
+ ), edu_filtered AS (
+   SELECT s21.STATE,
+           round(((sum(year21Count) - SUM(year12Count)) / SUM(year12Count)), 2) AS avg_higher_edu_growth
+   FROM se2021 s21
+       JOIN se2012 s12 ON s12.AREA_NAME = s21.AREA_NAME
+       AND s12.STATE = s21.STATE
+   GROUP BY s21.state
+   ORDER BY avg_higher_edu_growth DESC
+   LIMIT 20
+ ), house_edu_filtered AS (
+ SELECT h.house_id, h.bed, h.bath, h.city, h.zip_code, h.house_size, h.price, ef.*
+ FROM  REAL_ESTATE h
+ JOIN edu_filtered ef ON ef.state = h.state
+ WHERE h.price <= ${price_max} AND h.price > ${price_min}
+ )
+ SELECT *
+ FROM house_edu_filtered hef
+ ORDER BY hef.price ASC
+ ), 
+ 
+ SPACE_MAX AS (
+      SELECT
+        CITY, ZIP_CODE,
+        MAX(HOUSE_SIZE / (BED + BATH)) AS MAX_SE,
+        MAX((BED + BATH) / (2 * 4)) as MAX_BBA,
+        MAX(HOUSE_SIZE / (? * ?)) as MAX_SA
+      FROM
+        query3
+    ), SCORE_CALC AS (
+      SELECT
+        HOUSE_ID,
+        rt.STATE,
+        rt.CITY,
+        rt.ZIP_CODE,
+        rt.PRICE,
+        LEAST(BED, BATH) / GREATEST(BED, BATH) AS BBR,
+        (HOUSE_SIZE / (BED + BATH)) / MAX_SE AS SE,
+        ((BED + BATH) / (2 * 4)) / MAX_BBA AS BBA,
+        (HOUSE_SIZE / (? * ?)) / MAX_SA AS SA
+      FROM
+        query3 as rt,
+        SPACE_MAX
+    ), FINAL_SCORE AS (
+      SELECT
+        HOUSE_ID, STATE, CITY, ZIP_CODE, PRICE,
+        BBR, SE, BBA, SA,
+        (BBR + SE + BBA + SA) / 4 AS SCORE
+      FROM
+        SCORE_CALC
+    )
+    SELECT
+      fs.HOUSE_ID, STATE, CITY, ZIP_CODE, PRICE,
+      ROUND(AVG(SCORE), 2) AS AVG_SCORE
+    FROM FINAL_SCORE as fs
+    GROUP BY fs.HOUSE_ID, STATE, CITY, ZIP_CODE, PRICE
+    ORDER BY AVG_SCORE DESC
+    LIMIT 20;
+  `;
+
+  connection.query(query, [P, spacePerPerson, P, spacePerPerson], (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err);
+      res.status(500).json({ error: 'An error occurred while processing this request' });
+    } else {
+      res.json(data);
+    }
+  });
 }
 
-// Route 8: GET /query9
+// Route 9: GET /query9
 const query9 = async function (req, res) {
-  res.status(200).json({ message: 'query 9!' })
+  const minPrice = req.query.min_price ? req.query.min_price : 0
+  const maxPrice = req.query.max_price ? req.query.max_price : 1000000000
+  const minBaths = req.query.min_baths ? req.query.min_baths : 0
+  const minBeds = req.query.min_beds ? req.query.min_beds : 0
+  const state = req.query.state
+  const page = req.query.page ?? 1
+  const query = `select *
+from REAL_ESTATE
+where PRICE between ${minPrice} AND ${maxPrice}
+AND STATE = '${state}'
+AND BED >= ${minBeds}
+AND BATH >= ${minBaths}
+ORDER BY PRICE
+LIMIT 10 OFFSET ${(page - 1) * 10};`
+  connection.query(query, (err, data) => {
+    if (err) {
+      console.log(err)
+      res.status(500).json({ error: 'Failed to query database' })
+    } else {
+      res.status(200).json(data)
+    }
+  })
 }
 
-// Route 9: GET /query10
+// Route 10: GET /query10
 const query10 = async function (req, res) {
-  res.status(200).json({ message: 'query 10!' })
+  const state = req.query.state
+  const minPrice = req.query.min_price ? req.query.min_price : 0
+  const maxPrice = req.query.max_price ? req.query.max_price : 1000000000
+  const page = req.query.page ?? 1
+  const query = `select ZIP_CODE, AVG(PRICE) AS AVG_PRICE
+from REAL_ESTATE
+WHERE STATE = '${state}'
+GROUP BY ZIP_CODE
+HAVING AVG(PRICE) BETWEEN ${minPrice} AND ${maxPrice}
+ORDER BY AVG_PRICE
+LIMIT 10 OFFSET ${(page - 1) * 10};`
+  connection.query(query, (err, data) => {
+    if (err) {
+      console.log(err)
+      res.status(500).json({ error: 'Failed to query database' })
+    } else {
+      res.status(200).json(data)
+    }
+  })
 }
 
-// Route 10: GET /place_search
+// Route 11: GET /place_search
 const place_search = async function (req, res) {
   const address = req.query.address;
   const apiKey = req.query.apikey;
@@ -348,7 +567,7 @@ const place_search = async function (req, res) {
 
 module.exports = {
   mainpage,
-  query1And2,
+  query1,
   query2,
   query3,
   query4,
