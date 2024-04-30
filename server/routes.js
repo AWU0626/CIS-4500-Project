@@ -1,5 +1,6 @@
 const mysql = require('mysql')
 const config = require('./config.json')
+const axios = require('axios')
 
 // Creates MySQL connection using database credential provided in config.json
 // Do not edit. If the connection fails, make sure to check that config.json is filled out correctly
@@ -134,13 +135,10 @@ limit 10;`
 
 // Route 5: GET /query5
 const query5 = async function (req, res) {
-  const numStudent = req.query.num_student ? req.query.num_student : 20
-  const numFaculty = req.query.num_faculty ? req.query.num_faculty : 1
-  const startGrade = req.query.start_grade ? req.query.start_grade : 0
-  const endGrade = req.query.end_grade ? req.query.end_grade : 8
-  const page = req.query.page ?? 1
-  const pageSize = req.query.page_size ?? 10
-  const offset = (page - 1) * pageSize
+  const numStudent = req.query.num_student ? req.query.num_student : 20;
+  const numFaculty = req.query.num_faculty ? req.query.num_faculty : 1; 
+  const startGrade = req.query.start_grade ? req.query.start_grade : 0;
+  const endGrade = req.query.end_grade ? req.query.end_grade : 8;
 
   const query = `WITH RATIO_PER_SCHOOL AS (
     SELECT STATE, COUNTY, CITY, START_GRADE, END_GRADE, (ENROLLMENT / FT_TEACHER) AS ratio
@@ -191,8 +189,7 @@ SELECT round(CITY_AVG_RATIO, 2) AS CITY_AVG_RATIO,
    round(AVG_HIGH_SCHOOL_GRAD_GROWTH, 2) AS AVG_HIGH_SCHOOL_GRAD_GROWTH,
    A.STATE, COUNTY, CITY
 FROM AVG_RATIO_CITYSTATE A JOIN EDUCATION_filtered E ON A.COUNTY = E.AREA_NAME AND A.STATE = E.STATE
-ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC
-LIMIT ${pageSize} OFFSET ${offset};`
+ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC;`;
 
   connection.query(query,
     (err, data) => {
@@ -524,6 +521,50 @@ LIMIT 10 OFFSET ${(page - 1) * 10};`
   })
 }
 
+// Route 11: GET /place_search
+const place_search = async function (req, res) {
+  const address = req.query.address;
+  const apiKey = req.query.apikey;
+  const params = {
+    textQuery: address
+  };
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    'X-Goog-Api-Key': apiKey,
+    'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.name'
+  };
+  
+  try {
+    const response = await axios.post('https://places.googleapis.com/v1/places:searchText', params, { headers });
+    console.log(response.data);
+    const placeName = response.data.places[0].name;
+    console.log(placeName)
+    
+    const config = {
+      headers :{
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': apiKey,
+        'X-Goog-FieldMask': 'id,displayName,photos'
+      }
+    }
+    const getPlace = await axios.get(`https://places.googleapis.com/v1/${placeName}`, config);
+    console.log(getPlace.data);
+
+    if (getPlace.data.photos) {
+      const photoInfo = getPlace.data.photos[0].name;
+      console.log(photoInfo);
+      const getPhoto = await axios.get(`https://places.googleapis.com/v1/${photoInfo}/media?maxHeightPx=400&maxWidthPx=400&key=${apiKey}`, { responseType: 'arraybuffer' });
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.send(getPhoto.data);
+    } else {
+      res.json({error: 'No Photo Found'});
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   mainpage,
   query1,
@@ -535,5 +576,6 @@ module.exports = {
   query7,
   query8,
   query9,
-  query10
+  query10,
+  place_search
 }

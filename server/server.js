@@ -21,6 +21,7 @@ app.get('/api/areas/zips/recommended/:state', routes.query7)
 app.get('/api/areas/zips/occupancy/', routes.query8)
 app.get('/api/houses/', routes.query9)
 app.get('/api/areas/zips/prices/', routes.query10)
+app.get('/api/place_search/', routes.place_search)
 
 app.listen(config.server_port, () => {
   console.log(`Server running at http://${config.server_host}:${config.server_port}/`)
