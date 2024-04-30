@@ -35,25 +35,26 @@ order by e1.TIME, e1.STATE, e1.AREA_NAME`
 
 // Route 2: GET /query2
 const query2 = async function (req, res) {
-  const state = req.query.state
-  const area = req.query.area
-  const query = `
-  with specific_area as
-  (select *
-   from EDUCATION
-   where EDUCATION.STATE = '${state}' and EDUCATION.AREA_NAME = '${area}')
-select e1.ID as ID, e1.STATE as STATE, e1.AREA_NAME as AREA_NAME, e1.TIME as TIME, e1.COUNT as hs_below, e2.COUNT as hs, e3.COUNT as 4_below, e4.COUNT as 4_above
-from specific_area e1 join specific_area e2 join specific_area e3 join specific_area e4 on e1.STATE = e2.STATE and e2.STATE = e3.STATE and e3.STATE = e4.STATE and e1.AREA_NAME = e2.AREA_NAME and e2.AREA_NAME = e3.AREA_NAME and e3.AREA_NAME = e4.AREA_NAME and e1.TIME = e2.TIME and e2.TIME = e3.TIME and e3.TIME = e4.TIME and e1.EDUCATION_LEVEL='hs_below' and e2.EDUCATION_LEVEL='hs' and e3.EDUCATION_LEVEL='4_below' and e4.EDUCATION_LEVEL='4_above'
-order by e1.TIME, e1.STATE, e1.AREA_NAME
-  `
-  connection.query(query, (err, data) => {
-    if (err) {
-      console.log(err)
-      res.status(500).json({ error: 'Failed to query database' })
-    } else {
-      res.status(200).json(data)
-    }
-  })
+  const state = req.params.state;
+  const county = req.params.county;
+
+  const query = `with specific_area as
+                        (select *
+                         from EDUCATION
+                         where EDUCATION.STATE = '${state}' and EDUCATION.AREA_NAME = '${county}')
+                 select e1.ID as ID, e1.STATE as STATE, e1.AREA_NAME as AREA_NAME, e1.TIME as TIME, e1.COUNT as hs_below, e2.COUNT as hs, e3.COUNT as 4_below, e4.COUNT as 4_above
+                 from specific_area e1 join specific_area e2 join specific_area e3 join specific_area e4 on e1.STATE = e2.STATE and e2.STATE = e3.STATE and e3.STATE = e4.STATE and e1.AREA_NAME = e2.AREA_NAME and e2.AREA_NAME = e3.AREA_NAME and e3.AREA_NAME = e4.AREA_NAME and e1.TIME = e2.TIME and e2.TIME = e3.TIME and e3.TIME = e4.TIME and e1.EDUCATION_LEVEL='hs_below' and e2.EDUCATION_LEVEL='hs' and e3.EDUCATION_LEVEL='4_below' and e4.EDUCATION_LEVEL='4_above'
+                 order by e1.TIME, e1.STATE, e1.AREA_NAME;`;
+
+  connection.query(query,
+      (err, data) => {
+        if (err || data.length === 0) {
+          console.log(err);
+          res.json([]);
+        } else {
+          res.json(data);
+        }
+      });
 }
 
 // Route 3: GET /query3
