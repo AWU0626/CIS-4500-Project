@@ -11,7 +11,7 @@ app.use(cors({
 // We use express to define our various API endpoints and
 // provide their handlers that we implemented in routes.js
 app.get('/api/', routes.mainpage)
-app.get('/api/areas/cities/education/', routes.query1And2)
+app.get('/api/areas/cities/education/', routes.query1)
 app.get('/api/education/:state/:county/', routes.query2)
 app.get('/api/houses/growing/', routes.query3)
 app.get('/api/schools/ratio/', routes.query4)
