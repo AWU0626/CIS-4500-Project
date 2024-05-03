@@ -2,41 +2,45 @@ import { useEffect, useState } from "react";
 import axios from 'axios';
 import { Container, Grid, Link, Slider, TextField, Typography } from '@mui/material';
 import { LineChart, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Line, Tooltip, CartesianGrid, Legend, PolarRadiusAxis } from 'recharts';
+import PageNavigator from '../components/PageNavigator';
 
 const config = require('../config.json');
 
 export default function HomePage() {
 
-  const [homeTitle, setHomeTitle] = useState('');
   const [data, setData] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1); // 1 indexed
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 36; // limit to 9 because google maps api is expensiv
 
-  // just retrieves home page message
-  const fetchHome = async () => {
-    try {
-      const response = await axios.get(`http://${config.server_host}:${config.server_port}/api`);
-      setHomeTitle(response.data.message);
-    } catch (error) {
-      console.error('Error fetching home page message:', error);
-    }
-  };
-
-  const query1 = async () => {
+  const fetchQuery1 = async (currPage) => {
     try {
       const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/cities/education/`);
       const data = response.data;
+      const offset = (currPage - 1) * pageSize;
+      const slicedData = data.slice(offset, offset + pageSize);
+      const numResults = response.data.length;
       
+      console.log('currentPage: ' + currPage);
+      console.log('offset: ' + offset);
+      console.log('total pages: ' + Math.ceil(numResults/pageSize));
+      console.log(slicedData);
+
+      setTotalPages(Math.ceil(numResults/pageSize));
+      console.log(slicedData);
+
       const arr = []; // stores each state-county timeline per slot
-      for (let i = 0; i < data.length; i += 6) {
-        const state_county = `${data[i].STATE}, ${data[i].AREA_NAME}`;
+      for (let i = 0; i < slicedData.length; i += 6) {
+        const state_county = `${slicedData[i].STATE}, ${slicedData[i].AREA_NAME}`;
         const json = {};
         json[state_county] = [];
         for (let j = i; j < i + 6; j++) { // store timeline in dat
           const dat = {
-            time: data[j].time,
-            hs_below: data[j].hs_below,
-            hs: data[j].hs,
-            below_4: data[j]['4_below'],
-            above_4: data[j]['4_above']
+            time: slicedData[j].time,
+            hs_below: slicedData[j].hs_below,
+            hs: slicedData[j].hs,
+            below_4: slicedData[j]['4_below'],
+            above_4: slicedData[j]['4_above']
           };
           json[state_county].push(dat);
         }
@@ -48,15 +52,23 @@ export default function HomePage() {
     }
   }
 
+  const handlePageChange = async (pageNumber) => {
+    setCurrentPage(pageNumber);
+    await fetchQuery1(pageNumber);
+  };
+
   useEffect(() => {
-    query1();
+    fetchQuery1(1);
   }, []);
 
   return (
     <Container>
-      <Typography align='left' variant="h4" marginTop={3}>Welcome to ScholarStreets!</Typography>
+      <Typography align='left' variant="h3" marginTop={3} marginBottom={3}>Welcome to ScholarStreets!</Typography>
 
-      <p>description of the website blah blah</p>
+      <Typography variant="p">Our mission is to provide users accurate data about real estate,
+      schools and education history data for various locations in the United States. Our website is composed
+      of four main features:
+      </Typography>
 
       <Grid container spacing={2}>
       {data && data.map((row, index) => {
@@ -80,6 +92,13 @@ export default function HomePage() {
         </Grid>
       })}
       </Grid>
+      <div align='center'>
+        <PageNavigator
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+        />
+      </div>
     </Container>
   );
 };
