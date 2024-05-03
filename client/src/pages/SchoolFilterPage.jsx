@@ -1,12 +1,220 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from 'axios';
+import { Container, Grid, Slider, Box, Typography, Divider, TextField, Button} from "@mui/material";
+import { DataGrid } from '@mui/x-data-grid';
+import schoolLink from '../assets/school.jpg'
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import SchoolCityInfoCard from "../components/SchoolCityInfoCard";
 
 const config = require('../config.json');
+const serverPath = `http://${config.server_host}:${config.server_port}`;
 
 export default function SchoolFilterPage() {
+    const minGrade = 0;
+    const maxGrade = 12;
+    const minEnrollment = 0;
+    const maxEnrollment = 3000;
+    const [grade, setGrade] = useState([0, 12]);
+    const [enrollment, setEnrollment] = useState(0);
+    const [childrenCount, setChildrenCount] = useState(1);
+    const [results, setResults] = useState([]);
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const schoolColumns = [
+        { field: 'NAME', headerName: 'Name', width: "325" },
+        { field: 'STATE', headerName: 'State', width: "35" },
+        { field: 'CITY', headerName: 'City' },
+        { field: 'ADDRESS', headerName: 'Address', width: "275" },
+        { field: 'ENROLLMENT', headerName: 'Enrollment' },
+        { field: 'START_GRADE', headerName: 'Start Grade', width: "95" },
+        { field: 'END_GRADE', headerName: 'End Grade', width: "95"},
+        { field: 'action', headerName: 'Area Info', sortable: false,
+            renderCell: (params) => (
+              <Button variant="contained" color="primary" 
+                onClick={() => { 
+                    // console.log('Clicked', params.row);
+                    handleClickOpen(params.row);
+                }}
+              > Info
+              </Button>
+            ),
+            width: 150,
+          }
+        
+    ];
+
+    const [open, setOpen] = useState(false);
+    const [currentSchool, setCurrentSchool] = useState({});
+
+    const handleSearch = async () => {
+        try {
+            const response = await axios.get(`${serverPath}/api/schools/recommended/?min_start_grade=${grade[0]}&max_end_grade=${grade[1]}&min_enrollment=${enrollment}&num_children=${childrenCount}`);
+            setResults(response.data);
+            setPage(0);
+        } catch (err) {
+            console.log('Error fetching data: ', err);
+            setResults([]); 
+        }
+    };
+
+    
+    const handleChangeGrade = (e, newGrade) => {
+        setGrade(newGrade);
+    }
+
+    const handleChangeEnrollment = (e, newEnrollment) => {
+        setEnrollment(newEnrollment);
+    }
+
+    const handleChangeChildren = (e) => {
+        setChildrenCount(parseInt(e.target.value, 10));
+    }
+
+    const handlePageSizeChange = (e, newPageSize) => {
+        setPageSize(newPageSize); 
+        setPage(0);
+        handleSearch();
+    }
+    
+    const handleClickOpen = (schoolData) => {
+        setCurrentSchool(schoolData);
+        setOpen(true);
+    };
+      
+    const handleClose = () => {
+        setOpen(false);
+    };
+      
+
     return (
-        <div className="body">
-            Implements Query 6, Query 9, Query 10
-        </div>
+        <Container>
+            {/* Section 1: Description | Images */}
+            <Grid container item spacing={2} style={{marginTop: "1rem", marginBottom: "2rem"}}>
+                <Grid item xs={4}>
+                    <h2> Description: </h2>
+                    <p style={{textIndent: "2rem"}}>
+                        On this page, we want to help you find the best possible schools that 
+                        would be a great fit for your family scenario. Base on your family's 
+                        children enrollment status and the number of children in the family, we aim to 
+                        filter down the schools that would be the best for your family and some 
+                        basic housing statistics regarding the area where the school is located in.
+                    </p>
+
+                    <p style={{textIndent: "2rem"}}>
+                        In the section below, please enter the relevant informations that we need to
+                        help you find the best possible fit!
+                    </p>
+                </Grid>
+
+                <Grid item xs={8}>
+                    {/* Figurine Image & Description */}
+                    <figure>
+                        <img src={schoolLink} 
+                            alt="DallE School" 
+                            style={{ maxWidth: '100%', height: 'auto', 
+                                marginTop: "15px", borderRadius: "20px"}}/>
+                                
+                        <figcaption style={{ textAlign: 'right', fontSize: "8px", 
+                                    marginRight: "5px", marginTop: "-8px"}}>
+                            School image generated by Dall-E
+                        </figcaption>
+                    </figure>
+                </Grid>
+            </Grid>
+            <Divider /> 
+            
+            {/* Section 2: filter */}
+            <Grid container spacing={2}>
+                {/* Min and Max grade */}
+                <Grid item xs={4} style={{marginRight: "1rem"}}>
+                    <Box sx={{ width: '100%' }}>
+                        <Typography> 
+                            <h3 style={{textDecoration: 'underline', marginBottom: "25px"}}>Grade range</h3>
+                        </Typography>
+                        <Grid container spacing={2} alignItems="center">
+                            <Grid item>
+                                <Typography style={{fontSize: "1.25rem"}}>{minGrade}</Typography>
+                            </Grid>
+                            <Grid item xs>
+                                <Slider
+                                    getAriaLabel={() => 'Grade range'}
+                                    value={grade}
+                                    onChange={handleChangeGrade}
+                                    valueLabelDisplay="auto"
+                                    min={minGrade}
+                                    max={maxGrade}
+                                />
+                            </Grid>
+                            <Grid item>
+                                <Typography sx={{ fontSize: "1.25rem", m: "6px" }}>{maxGrade}</Typography>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Grid>
+                <Divider />
+                
+                {/* Min number of enrollment*/}
+                <Grid item xs={4} style={{marginRight: "1rem"}}>
+                    <Box sx={{ width: '100%' }}>
+                        <Typography>
+                            <h3 style={{ textDecoration: 'underline', marginBottom: "25px" }}>Enrollment limit</h3>
+                        </Typography>
+                        <Grid container spacing={2} alignItems="center">
+                            <Grid item>
+                            <Typography sx={{ fontSize: "1.25rem" }}>{minEnrollment}</Typography>
+                            </Grid>
+                            <Grid item xs>
+                            <Slider
+                                getAriaLabel={() => 'Enrollment limit'}
+                                value={enrollment}
+                                onChange={handleChangeEnrollment}
+                                valueLabelDisplay="auto"
+                                min={minEnrollment}
+                                max={maxEnrollment}
+                            />
+                            </Grid>
+                            <Grid item>
+                                <Typography sx={{ fontSize: "1.25rem", m: "6px" }}>{maxEnrollment}</Typography>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                </Grid>
+
+                {/* Number of Children */}
+                <Grid item xs={3}>
+                    <Box sx={{width: '100%'}}>
+                        <h3 style={{textDecoration: "underline"}}>Number of Children</h3>
+                        <TextField required id="outlined-required" label="Number of Children" defaultValue="1" onChange={handleChangeChildren}/>
+                    </Box>
+                </Grid>
+            </Grid>
+
+            <Grid container spacing={2} item xs={10.7} style={{marginTop: "2.5rem", marginBottom: "1.25rem", justifyContent: "Right"}}>
+                <Button variant="contained" color="primary" onClick={handleSearch}>
+                    Search
+                </Button>
+            </Grid>
+            <Divider />
+
+            <DataGrid
+                getRowId={(row) => row.SCHOOL_ID}
+                rows={results}
+                columns={schoolColumns}
+                pageSize={pageSize}
+                rowsPerPageOptions={[10, 15, 20]}
+                onPageSizeChange={(newPageSize) => handlePageSizeChange(newPageSize)}
+                autoHeight
+                page={page}
+                onPageChange={(newPage) => setPage(newPage)}
+            />
+
+            <Dialog fullWidth maxWidth="xl" open={open} onClose={handleClose} aria-labelledby="school-info-title">
+                <DialogContent>
+                    <SchoolCityInfoCard school={currentSchool} onClose={handleClose}/>
+                </DialogContent>
+            </Dialog>
+
+        </Container>
     );
 }
