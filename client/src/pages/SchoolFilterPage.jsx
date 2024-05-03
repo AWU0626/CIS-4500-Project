@@ -3,63 +3,53 @@ import axios from 'axios';
 import { Container, Grid, Slider, Box, Typography, Divider, TextField, Button} from "@mui/material";
 import { DataGrid } from '@mui/x-data-grid';
 import schoolLink from '../assets/school.jpg'
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import SchoolCityInfoCard from "../components/SchoolCityInfoCard";
 
 const config = require('../config.json');
+const serverPath = `http://${config.server_host}:${config.server_port}`;
 
 export default function SchoolFilterPage() {
-    const [grade, setGrade] = useState([0, 12]);
     const minGrade = 0;
     const maxGrade = 12;
-
-    const [enrollment, setEnrollment] = useState(30);
     const minEnrollment = 0;
     const maxEnrollment = 3000;
-
+    const [grade, setGrade] = useState([0, 12]);
+    const [enrollment, setEnrollment] = useState(0);
     const [childrenCount, setChildrenCount] = useState(1);
-
     const [results, setResults] = useState([]);
-
     const [page, setPage] = useState(0);
-
     const [pageSize, setPageSize] = useState(10);
-
     const schoolColumns = [
-        {
-            field: 'NAME',
-            headerName: 'Name',
-            width: "350"
-        },
-        {
-            field: 'STATE',
-            headerName: 'State'
-        },
-        { 
-            field: 'CITY',
-            headerName: 'City'
-        },
-        { 
-            field: 'ADDRESS',
-            headerName: 'Address',
-            width: "300"
-        },
-        { 
-            field: 'ENROLLMENT',
-            headerName: 'Enrollment'
-        },
-        { 
-            field: 'START_GRADE',
-            headerName: 'Start Grade'
-        },
-        { 
-            field: 'END_GRADE',
-            headerName: 'End Grade'
-        },
+        { field: 'NAME', headerName: 'Name', width: "325" },
+        { field: 'STATE', headerName: 'State', width: "35" },
+        { field: 'CITY', headerName: 'City' },
+        { field: 'ADDRESS', headerName: 'Address', width: "275" },
+        { field: 'ENROLLMENT', headerName: 'Enrollment' },
+        { field: 'START_GRADE', headerName: 'Start Grade', width: "95" },
+        { field: 'END_GRADE', headerName: 'End Grade', width: "95"},
+        { field: 'action', headerName: 'Area Info', sortable: false,
+            renderCell: (params) => (
+              <Button variant="contained" color="primary" 
+                onClick={() => { 
+                    // console.log('Clicked', params.row);
+                    handleClickOpen(params.row);
+                }}
+              > Info
+              </Button>
+            ),
+            width: 150,
+          }
         
-      ];
+    ];
 
-      const handleSearch = async () => {
+    const [open, setOpen] = useState(false);
+    const [currentSchool, setCurrentSchool] = useState({});
+
+    const handleSearch = async () => {
         try {
-            const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/schools/recommended/?min_start_grade=${grade[0]}&max_end_grade=${grade[1]}&min_enrollment=${enrollment}&num_children=${childrenCount}`);
+            const response = await axios.get(`${serverPath}/api/schools/recommended/?min_start_grade=${grade[0]}&max_end_grade=${grade[1]}&min_enrollment=${enrollment}&num_children=${childrenCount}`);
             setResults(response.data);
             setPage(0);
         } catch (err) {
@@ -80,8 +70,22 @@ export default function SchoolFilterPage() {
     const handleChangeChildren = (e) => {
         setChildrenCount(parseInt(e.target.value, 10));
     }
-    
 
+    const handlePageSizeChange = (e, newPageSize) => {
+        setPageSize(newPageSize); 
+        setPage(0);
+        handleSearch();
+    }
+    
+    const handleClickOpen = (schoolData) => {
+        setCurrentSchool(schoolData);
+        setOpen(true);
+    };
+      
+    const handleClose = () => {
+        setOpen(false);
+    };
+      
 
     return (
         <Container>
@@ -187,37 +191,30 @@ export default function SchoolFilterPage() {
             </Grid>
 
             <Grid container spacing={2} item xs={10.7} style={{marginTop: "2.5rem", marginBottom: "1.25rem", justifyContent: "Right"}}>
-                <Button variant="contained" color="success" onClick={handleSearch}>
+                <Button variant="contained" color="primary" onClick={handleSearch}>
                     Search
                 </Button>
             </Grid>
             <Divider />
 
-            
-            {/* filter result */}
-            {/* <DataGrid
-                getRowId={(row) => row.SCHOOL_ID}
-                rows={results}
-                columns={schoolColumns}
-                pageSize={pageSize}
-                rowsPerPageOptions={[5, 10, 25]}
-                onPageSizeChange={(newPageSize) => {
-                    setPageSize(newPageSize);
-                    setPage(0);
-                  }}
-                autoHeight
-            /> */}
             <DataGrid
                 getRowId={(row) => row.SCHOOL_ID}
                 rows={results}
                 columns={schoolColumns}
                 pageSize={pageSize}
                 rowsPerPageOptions={[10, 15, 20]}
-                onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+                onPageSizeChange={(newPageSize) => handlePageSizeChange(newPageSize)}
                 autoHeight
                 page={page}
                 onPageChange={(newPage) => setPage(newPage)}
             />
+
+            <Dialog fullWidth maxWidth="xl" open={open} onClose={handleClose} aria-labelledby="school-info-title">
+                <DialogContent>
+                    <SchoolCityInfoCard school={currentSchool} onClose={handleClose}/>
+                </DialogContent>
+            </Dialog>
+
         </Container>
     );
 }
