@@ -10,54 +10,63 @@ const config = require('../config.json');
 export default function HomePage() {
 
   const [data, setData] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); // 1 indexed
-  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // 1 indexed
+  const [totalPages, setTotalPages] = useState(0);
+  const [allData, setAllData] = useState([]);
   const pageSize = 36; // limit to 9 because google maps api is expensiv
 
   const fetchQuery1 = async (currPage) => {
     try {
       const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/cities/education/`);
       const data = response.data;
-      const offset = (currPage - 1) * pageSize;
-      const slicedData = data.slice(offset, offset + pageSize);
-      const numResults = response.data.length;
-
-      console.log('currentPage: ' + currPage);
-      console.log('offset: ' + offset);
-      console.log('total pages: ' + Math.ceil(numResults / pageSize));
-      console.log(slicedData);
-
-      setTotalPages(Math.ceil(numResults / pageSize));
-      console.log(slicedData);
-
-      const arr = []; // stores each state-county timeline per slot
-      for (let i = 0; i < slicedData.length; i += 6) {
-        const state_county = `${slicedData[i].STATE}, ${slicedData[i].AREA_NAME}`;
-        const json = {};
-        json[state_county] = [];
-        for (let j = i; j < i + 6; j++) { // store timeline in dat
-          const dat = {
-            time: slicedData[j].time,
-            hs_below: slicedData[j].hs_below,
-            hs: slicedData[j].hs,
-            below_4: slicedData[j]['4_below'],
-            above_4: slicedData[j]['4_above']
-          };
-          json[state_county].push(dat);
-        }
-        arr.push(json);
-      }
-      setData(arr);
+      setAllData(data);
+      setCurrentPage(1);
     } catch (error) {
       console.log('error fetching query1');
     }
   }
 
+  const cleanData = (currPage) => {
+    const offset = (currPage - 1) * pageSize;
+    const slicedData = allData.slice(offset, offset + pageSize);
+    const numResults = allData.length;
+
+    console.log('currentPage: ' + currPage);
+    console.log('offset: ' + offset);
+    console.log('total pages: ' + Math.ceil(numResults / pageSize));
+    console.log(slicedData);
+
+    setTotalPages(Math.ceil(numResults / pageSize));
+    console.log(slicedData);
+
+    const arr = []; // stores each state-county timeline per slot
+    for (let i = 0; i < slicedData.length; i += 6) {
+      const state_county = `${slicedData[i].STATE}, ${slicedData[i].AREA_NAME}`;
+      const json = {};
+      json[state_county] = [];
+      for (let j = i; j < i + 6; j++) { // store timeline in dat
+        const dat = {
+          time: slicedData[j].time,
+          hs_below: slicedData[j].hs_below,
+          hs: slicedData[j].hs,
+          below_4: slicedData[j]['4_below'],
+          above_4: slicedData[j]['4_above']
+        };
+        json[state_county].push(dat);
+      }
+      arr.push(json);
+    }
+    setData(arr);
+  }
+
   const handlePageChange = async (pageNumber) => {
     setCurrentPage(pageNumber);
-    await fetchQuery1(pageNumber);
   };
 
+  useEffect(() => {
+    cleanData(currentPage);
+  }, [currentPage])
+  
   useEffect(() => {
     fetchQuery1(1);
   }, []);
