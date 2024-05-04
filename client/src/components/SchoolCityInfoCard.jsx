@@ -187,7 +187,7 @@ export default function SchoolCityInfoCard(props) {
     
                     {/* Implement q10 */}
                     <hr style={{marginTop: "2rem", marginBottom: "1rem"}}/>
-                    <Typography variant="h6" style={{marginBottom: "1rem"}}>Averae House Prices in {school.STATE} by ZIP Code:</Typography>
+                    <Typography variant="h6" style={{marginBottom: "1rem"}}>Average House Prices in {school.STATE} by ZIP Code:</Typography>
                     <Grid container spacing={2}>
                         {resultsQ10.slice(0, 10).map((zip, index) => (
                             <Grid item key={index} xs={2.4} sm={2.4} md={2.4} lg={2.4}>
