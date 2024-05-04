@@ -66,7 +66,7 @@ export default function HomePage() {
   useEffect(() => {
     cleanData(currentPage);
   }, [currentPage])
-  
+
   useEffect(() => {
     fetchQuery1(1);
   }, []);
@@ -87,12 +87,6 @@ export default function HomePage() {
             </Typography>
           </Typography>
           <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
-            Tab2
-            <Typography style={{ marginTop: 2, marginBottom: 5 }}>
-              brief description
-            </Typography>
-          </Typography>
-          <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
             Education Cities
             <Typography variant="body1" style={{ marginTop: 2, marginBottom: 5 }}>
               Do not know where to live, but you deeply care about where your child will get the best
@@ -100,13 +94,21 @@ export default function HomePage() {
             </Typography>
           </Typography>
           <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
-            Tab4
+            Tab3
             <Typography style={{ marginTop: 2, marginBottom: 5 }}>
               brief description
             </Typography>
           </Typography>
+          <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
+            Tab4
+            <Typography style={{ marginTop: 2, marginBottom: 5 }}>
+              Discover schools based on grade levels and enrollment numbers.
+              Get insights into the surrounding areas with basic statistics.
+              Interested in a particular school? Explore nearby housing options and
+              compare average prices across different zip codes.
+            </Typography>
+          </Typography>
         </Grid>
-
         <Grid item xs={6}>
           {/* Figurine Image & Description */}
           <figure>
@@ -129,7 +131,7 @@ export default function HomePage() {
       <hr style={{ marginTop: "2rem", marginBottom: "1rem" }} />
       <Typography variant="h5" style={{ fontWeight: "bold", marginTop: 3, marginBottom: 10 }} >Education History per state and county</Typography>
       <Typography style={{ marginTop: 2, marginBottom: 5 }}>
-        To get started, check out some of the education history for each state, county below!
+        Before you start, check out some of the education history for each state, county below!
       </Typography>
 
       <Grid container item style={{ marginTop: "1rem", marginBottom: "2rem" }}>
