@@ -20,37 +20,38 @@ export default function SchoolCityInfoCard(props) {
     const [pageQ10, setPageQ10] = useState(1);
     const [resultsQ10, setResultsQ10] = useState([]);
 
+    const [searchInitiated, setSearchInitiated] = useState(false);
+
     // pagination
-    const nextPage = (query) => {
+    const nextPage = async (query, newPage) => {
         if (query === 'Q9' && resultsQ9.length === 10) {
-            setPageQ9(pageQ9 + 1);
-            fetchQuery9();
+            setPageQ9(newPage);
+            await fetchQuery9(newPage);
 
         } else if (query === 'Q10' && resultsQ10.length === 10) {
-            setPageQ10(pageQ10 + 1);
-            fetchQuery10();
+            setPageQ10(newPage);
+            await fetchQuery10(newPage);
         }
     };
 
-    const prevPage = (query) => {
-        if (query === 'Q9' && pageQ9 > 1) {
-            setPageQ9(pageQ9 - 1);
-            fetchQuery9();
+    const prevPage = async (query, newPage) => {
+        if (query === 'Q9' && newPage >= 1) {
+            setPageQ9(newPage);
+            await fetchQuery9(newPage);
         } else if (query === 'Q10' && pageQ10 > 1) {
-            setPageQ10(pageQ10 - 1);
-            fetchQuery10();
+            setPageQ10(newPage);
+            await fetchQuery10(newPage);
         }
     };
-
 
     const handleClose = (e) => {
         console.log(school);
         props.onClose();
     }
 
-    const fetchQuery9 = async () => {
+    const fetchQuery9 = async (newPage) => {
         try {
-            const response = await axios.get(`${serverPath}/api/houses/?min_price=${minPrice}&max_price=${maxPrice}&min_baths=${numBath}&min_beds=${numBed}&page=${pageQ9}&state=${school.STATE}`);
+            const response = await axios.get(`${serverPath}/api/houses/?min_price=${minPrice}&max_price=${maxPrice}&min_baths=${numBath}&min_beds=${numBed}&page=${newPage}&state=${school.STATE}`);
             setResultsQ9(response.data);
             console.log(response.data)
         } catch (err) {
@@ -59,9 +60,9 @@ export default function SchoolCityInfoCard(props) {
         }
     }
 
-    const fetchQuery10 = async () => {
+    const fetchQuery10 = async (newPage) => {
         try {
-            const response = await axios.get(`${serverPath}/api/areas/zips/prices/?min_price=${minPrice}&max_price=${maxPrice}&page=${pageQ10}&state=${school.STATE}`);
+            const response = await axios.get(`${serverPath}/api/areas/zips/prices/?min_price=${minPrice}&max_price=${maxPrice}&page=${newPage}&state=${school.STATE}`);
             setResultsQ10(response.data);
             console.log(response.data)
         } catch (err) {
@@ -70,11 +71,11 @@ export default function SchoolCityInfoCard(props) {
         }
     }
 
-    const handleSearch = () => {
-        setPageQ9(1);
-        setPageQ10(1);
-        fetchQuery9();
-        fetchQuery10();
+    const handleSearch = async (currPage) => {
+        setPageQ9(currPage);
+        setPageQ10(currPage);
+        await fetchQuery9(currPage);
+        await fetchQuery10(currPage);
     }
 
     return (
@@ -146,7 +147,7 @@ export default function SchoolCityInfoCard(props) {
 
                 <hr />
                 <Grid item xs={1} alignContent={"center"}>
-                    <Button variant="contained" color="primary" onClick={handleSearch} sx={{width: '100%', marginTop: "2rem", marginBot: "2rem"}}>
+                    <Button variant="contained" color="primary" onClick={() => handleSearch(1)} sx={{width: '100%', marginTop: "2rem", marginBot: "2rem"}}>
                         Search
                     </Button>
                     <Button variant="contained" color="primary" onClick={handleClose} sx={{width: '100%', marginTop: "2rem", marginBot: "2rem"}}>
@@ -158,47 +159,55 @@ export default function SchoolCityInfoCard(props) {
             <hr style={{marginTop: "2rem", marginBottom: "1rem"}}/>
 
             {/* Implement q9 */}
-            <Typography variant="h6" style={{marginBottom: "1rem"}}>Houses in {school.STATE}:</Typography>
-            <Grid container spacing={2}>
-                {resultsQ9.slice(0, 10).map((house, index) => (
-                    <Grid item key={index} xs={2.4} sm={2.4} md={2.4} lg={2.4}>
-                        <Card raised>
-                            <CardContent>
-                                <Typography variant="h6" gutterBottom>House Details</Typography>
-                                <Typography variant="body2">House ID: {house.HOUSE_ID}</Typography>
-                                <Typography variant="body2">City: {house.CITY}</Typography>
-                                <Typography variant="body2">State: {house.STATE}</Typography>
-                                <Typography variant="body2">ZIP Code: {house.ZIP_CODE}</Typography>
-                                <Typography variant="body2">Price: ${house.PRICE.toLocaleString()}</Typography>
-                                <Typography variant="body2">Beds: {house.BED}</Typography>
-                                <Typography variant="body2">Baths: {house.BATH}</Typography>
-                                <Typography variant="body2">House Size: {house.HOUSE_SIZE} sq ft</Typography>
-                                <Typography variant="body2">Sold Date: {`${house.PREV_SOLD_MONTH}/${house.PREV_SOLD_DAY}/${house.PREV_SOLD_YEAR}`}</Typography>
-                            </CardContent>
-                        </Card>
+            {resultsQ9.length > 0 ? (
+                <div>
+                    <Typography variant="h6" style={{marginBottom: "1rem"}}>Houses in {school.STATE}:</Typography>
+                    <Grid container spacing={2}>
+                        {resultsQ9.slice(0, 10).map((house, index) => (
+                            <Grid item key={index} xs={2.4} sm={2.4} md={2.4} lg={2.4}>
+                                <Card raised>
+                                    <CardContent>
+                                        <Typography variant="h6" gutterBottom>House Details</Typography>
+                                        <Typography variant="body2">House ID: {house.HOUSE_ID}</Typography>
+                                        <Typography variant="body2">City: {house.CITY}</Typography>
+                                        <Typography variant="body2">State: {house.STATE}</Typography>
+                                        <Typography variant="body2">ZIP Code: {house.ZIP_CODE}</Typography>
+                                        <Typography variant="body2">Price: ${house.PRICE.toLocaleString()}</Typography>
+                                        <Typography variant="body2">Beds: {house.BED}</Typography>
+                                        <Typography variant="body2">Baths: {house.BATH}</Typography>
+                                        <Typography variant="body2">House Size: {house.HOUSE_SIZE} sq ft</Typography>
+                                        <Typography variant="body2">Sold Date: {`${house.PREV_SOLD_MONTH}/${house.PREV_SOLD_DAY}/${house.PREV_SOLD_YEAR}`}</Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        ))}
                     </Grid>
-                ))}
-            </Grid>
-            <Button onClick={() => prevPage('Q9')} disabled={pageQ9 === 1} style={{marginTop: "1rem"}}>Previous</Button>
-            <Button onClick={() => nextPage('Q9')} disabled={resultsQ9.length < 10} style={{marginTop: "1rem"}}>Next</Button>
+                    <Button onClick={() => prevPage('Q9', pageQ9 - 1)} disabled={pageQ9 === 1} style={{marginTop: "1rem"}}>Previous</Button>
+                    <Button onClick={() => nextPage('Q9', pageQ9 + 1)} disabled={resultsQ9.length < 10} style={{marginTop: "1rem"}}>Next</Button>
     
-            {/* Implement q10 */}
-            <hr style={{marginTop: "2rem", marginBottom: "1rem"}}/>
-            <Typography variant="h6" style={{marginBottom: "1rem"}}>Averae House Prices in {school.STATE} by ZIP Code:</Typography>
-            <Grid container spacing={2}>
-                {resultsQ10.slice(0, 10).map((zip, index) => (
-                    <Grid item key={index} xs={2.4} sm={2.4} md={2.4} lg={2.4}>
-                        <Card raised>
-                            <CardContent>
-                                <Typography variant="body2">ZIP Code: {zip.ZIP_CODE}</Typography>
-                                <Typography variant="body2">Average Price: ${parseInt(zip.AVG_PRICE).toLocaleString()}</Typography>
-                            </CardContent>
-                        </Card>
+                    {/* Implement q10 */}
+                    <hr style={{marginTop: "2rem", marginBottom: "1rem"}}/>
+                    <Typography variant="h6" style={{marginBottom: "1rem"}}>Averae House Prices in {school.STATE} by ZIP Code:</Typography>
+                    <Grid container spacing={2}>
+                        {resultsQ10.slice(0, 10).map((zip, index) => (
+                            <Grid item key={index} xs={2.4} sm={2.4} md={2.4} lg={2.4}>
+                                <Card raised>
+                                    <CardContent>
+                                        <Typography variant="body2">ZIP Code: {zip.ZIP_CODE}</Typography>
+                                        <Typography variant="body2">Average Price: ${parseInt(zip.AVG_PRICE).toLocaleString()}</Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        ))}
                     </Grid>
-                ))}
-            </Grid>
-            <Button onClick={() => prevPage('Q10')} disabled={pageQ10 === 1} style={{marginTop: "1rem"}}>Previous</Button>
-            <Button onClick={() => nextPage('Q10')} disabled={resultsQ10.length < 10} style={{marginTop: "1rem"}}>Next</Button>
+                    <Button onClick={() => prevPage('Q10', pageQ10 - 1)} disabled={pageQ10 === 1} style={{marginTop: "1rem"}}>Previous</Button>
+                    <Button onClick={() => nextPage('Q10', pageQ10 + 1)} disabled={resultsQ10.length < 10} style={{marginTop: "1rem"}}>Next</Button>
+                </div>
+             ) : searchInitiated ? (
+                <Typography style={{ marginTop: "5rem", marginBottom: "3rem" }}>Rendering results ... </Typography>
+            ) : (
+                <Typography style={{ marginTop: "5rem", marginBottom: "3rem" }}>No Search yet. Please initiate a search to see results.</Typography>
+            )}
         </Container>
     );
 }
