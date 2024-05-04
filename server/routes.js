@@ -204,112 +204,58 @@ ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC;`;
 
 // Route 6: GET /query6
 const query6 = async function (req, res) {
-  const minStartGrade = req.params.min_start_grade ?? 0
-  const maxEndGrade = req.params.max_end_grade ?? 12
-  const minEnrollment = req.params.min_enrollment ?? 0
-  const numChildren = req.params.num_children ?? 1
+  const minStartGrade = req.query.min_start_grade ?? 0
+  const maxEndGrade = req.query.max_end_grade ?? 12
+  const minEnrollment = req.query.min_enrollment ?? 0
+  const numChildren = req.query.num_children ?? 1
 
   // pages
-  const page = req.params.page ?? 2
-  const pageSize = req.params.page_size ?? 10
-
-  if (!page) {
-    const sqlQueryNoLimit = `
-      SELECT *
+  const sqlQuery = `
+    SELECT *
+    FROM (
+      SELECT fs.SCHOOL_ID, fs.NAME, fs.STATE, fs.CITY, fs.COUNTY, fs.ADDRESS,
+              fs.START_GRADE, fs.END_GRADE, fs.ENROLLMENT,
+              eh.hs_below, eh.4_below, eh.hs, eh.4_above,
+              hd.avg_price, hd.avg_house_size, hd.avg_bed, hd.avg_bath,
+              ROW_NUMBER() OVER(PARTITION BY fs.STATE
+                  ORDER BY (
+                        eh.4_above - eh.4_below) DESC,
+                        hd.avg_price ASC,
+                        hd.avg_house_size DESC,
+                        hd.avg_bed DESC,
+                        hd.avg_bath DESC
+                  ) as rn
       FROM (
-        SELECT fs.SCHOOL_ID, fs.NAME, fs.STATE, fs.CITY, fs.COUNTY, fs.ADDRESS,
-                fs.START_GRADE, fs.END_GRADE, fs.ENROLLMENT,
-                eh.hs_below, eh.4_below, eh.hs, eh.4_above,
-                hd.avg_price, hd.avg_house_size, hd.avg_bed, hd.avg_bath,
-                ROW_NUMBER() OVER(PARTITION BY fs.STATE
-                    ORDER BY (
-                          eh.4_above - eh.4_below) DESC,
-                          hd.avg_price ASC,
-                          hd.avg_house_size DESC,
-                          hd.avg_bed DESC,
-                          hd.avg_bath DESC
-                    ) as rn
-        FROM (
-            SELECT s.SCHOOL_ID, s.NAME, s.STATE, s.CITY, s.COUNTY, s.ADDRESS,
-            s.START_GRADE, s.END_GRADE, s.ENROLLMENT
-            FROM SCHOOL s
-            WHERE
-            s.START_GRADE >= ${minStartGrade} AND
-            s.END_GRADE <=  ${maxEndGrade} AND
-            s.ENROLLMENT >= ${minEnrollment}
-        ) as fs
-            JOIN education_history_perYear eh ON fs.STATE = eh.STATE AND eh.AREA_NAME = fs.COUNTY
-            JOIN housing_data_averages hd ON fs.STATE = hd.STATE AND fs.CITY = hd.CITY
-        WHERE
-            (eh.4_above - eh.4_below) > 0 AND
-            hd.avg_bed >= (${numChildren} / 2)
-      ) t
-      WHERE rn <= 3
-      ORDER BY
-        (4_above - 4_below) DESC,
-        avg_price ASC,
-        avg_house_size DESC,
-        avg_bed DESC,
-        avg_bath DESC;`
-    connection.query(sqlQueryNoLimit, (err, data) => {
-      if (err || data.length === 0) {
-        console.log(err)
-        res.json([])
-      } else {
-        res.json(data)
-      }
-    })
-  } else {
-    const offset = (page - 1) * pageSize
+          SELECT s.SCHOOL_ID, s.NAME, s.STATE, s.CITY, s.COUNTY, s.ADDRESS,
+          s.START_GRADE, s.END_GRADE, s.ENROLLMENT
+          FROM SCHOOL s
+          WHERE
+          s.START_GRADE >= ${minStartGrade} AND
+          s.END_GRADE <=  ${maxEndGrade} AND
+          s.ENROLLMENT >= ${minEnrollment}
+      ) as fs
+          JOIN education_history_perYear eh ON fs.STATE = eh.STATE AND eh.AREA_NAME = fs.COUNTY
+          JOIN housing_data_averages hd ON fs.STATE = hd.STATE AND fs.CITY = hd.CITY
+      WHERE
+          (eh.4_above - eh.4_below) > 0 AND
+          hd.avg_bed >= (${numChildren} / 2)
+    ) t
+    WHERE rn <= 3
+    ORDER BY
+      (4_above - 4_below) DESC,
+      avg_price ASC,
+      avg_house_size DESC,
+      avg_bed DESC,
+      avg_bath DESC;`
 
-    const sqlQueryWithLimit = `
-      SELECT *
-      FROM (
-        SELECT fs.SCHOOL_ID, fs.NAME, fs.STATE, fs.CITY, fs.COUNTY, fs.ADDRESS,
-                fs.START_GRADE, fs.END_GRADE, fs.ENROLLMENT,
-                eh.hs_below, eh.4_below, eh.hs, eh.4_above,
-                hd.avg_price, hd.avg_house_size, hd.avg_bed, hd.avg_bath,
-                ROW_NUMBER() OVER(PARTITION BY fs.STATE
-                    ORDER BY (
-                          eh.4_above - eh.4_below) DESC,
-                          hd.avg_price ASC,
-                          hd.avg_house_size DESC,
-                          hd.avg_bed DESC,
-                          hd.avg_bath DESC
-                    ) as rn
-        FROM (
-            SELECT s.SCHOOL_ID, s.NAME, s.STATE, s.CITY, s.COUNTY, s.ADDRESS,
-            s.START_GRADE, s.END_GRADE, s.ENROLLMENT
-            FROM SCHOOL s
-            WHERE
-            s.START_GRADE >= ${minStartGrade} AND
-            s.END_GRADE <=  ${maxEndGrade} AND
-            s.ENROLLMENT >= ${minEnrollment}
-        ) as fs
-            JOIN education_history_perYear eh ON fs.STATE = eh.STATE AND eh.AREA_NAME = fs.COUNTY
-            JOIN housing_data_averages hd ON fs.STATE = hd.STATE AND fs.CITY = hd.CITY
-        WHERE
-            (eh.4_above - eh.4_below) > 0 AND
-            hd.avg_bed >= (${numChildren} / 2)
-      ) t
-      WHERE rn <= 3
-      ORDER BY
-        (4_above - 4_below) DESC,
-        avg_price ASC,
-        avg_house_size DESC,
-        avg_bed DESC,
-        avg_bath DESC
-      LIMIT ${pageSize} OFFSET ${offset}`
-    connection.query(sqlQueryWithLimit, (err, data) => {
-      if (err || data.length === 0) {
-        console.log(err)
-        res.json([])
-      } else {
-        res.json(data)
-        console.log(res[0])
-      }
-    })
-  }
+  connection.query(sqlQuery, (err, data) => {
+    if (err || data.length === 0) {
+      console.log(err)
+      res.json([])
+    } else {
+      res.json(data)
+    }
+  });
 }
 
 // Route 7: GET /api/areas/zips/recommended/
