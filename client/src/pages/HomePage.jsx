@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from 'axios';
-import { Container, Grid, Link, Slider, TextField, Typography } from '@mui/material';
+import { Divider, Container, Grid, Link, Slider, TextField, Typography } from '@mui/material';
 import { LineChart, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Line, Tooltip, CartesianGrid, Legend, PolarRadiusAxis } from 'recharts';
 import PageNavigator from '../components/PageNavigator';
 import MainImage from '../images/ScholarStreetT1.png';
@@ -87,7 +87,7 @@ export default function HomePage() {
             Education Cities
             <Typography variant="body1" style={{ marginTop: 2, marginBottom: 5 }}>
               Do not know where to live, but you deeply care about where your child will get the best
-              education in America? Then this tab is just for you! 
+              education in America? Then this tab is just for you!
             </Typography>
           </Typography>
           <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
@@ -119,6 +119,45 @@ export default function HomePage() {
 
       <hr style={{ marginTop: "2rem", marginBottom: "1rem" }} />
       <Typography variant="h5" style={{ fontWeight: "bold", marginTop: 3, marginBottom: 10 }} >Education History per state and county</Typography>
+      <Typography style={{ marginTop: 2, marginBottom: 5 }}>
+        To get started, check out some of the education history for each state, county below!
+      </Typography>
+
+      <Grid container item style={{ marginTop: "1rem", marginBottom: "2rem" }}>
+        <Grid item xs={6}>
+          <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
+            hs_below
+            <Typography variant="body1" style={{ marginTop: 2, marginBottom: 5 }}>
+              the number of people at the time with less than a high school degree
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
+            hs
+            <Typography variant="body1" style={{ marginTop: 2, marginBottom: 5 }}>
+              the number of people at the time with a high school degree
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
+            below_4
+            <Typography variant="body1" style={{ marginTop: 2, marginBottom: 5 }}>
+              the number of people at the time with less than a bachelor's degree
+            </Typography>
+          </Typography>
+        </Grid>
+        <Grid item xs={6}>
+          <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
+            above_4
+            <Typography variant="body1" style={{ marginTop: 2, marginBottom: 5 }}>
+              the number of people at the time with more than a bachelor's degree
+            </Typography>
+          </Typography>
+        </Grid>
+      </Grid>
+
       <Grid container spacing={2}>
         {data && data.map((row, index) => {
           console.log(row)
