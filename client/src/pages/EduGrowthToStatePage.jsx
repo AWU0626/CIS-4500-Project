@@ -9,39 +9,37 @@ export default function EduGrowthToStatePage() {
     const [minPrice, setMinPrice] = useState(10000);
     const [maxPrice, setMaxPrice] = useState(600000);
     const [pageQ3, setPageQ3] = useState(1);
-    const [pageSizeQ3, setPageSizeQ3] = useState(10);
     const [resultsQ3, setResultsQ3] = useState([]);
     const [searchInitiated, setSearchInitiated] = useState(false);
 
-    const handleSearchHousesByTopStates = () => {
-        setPageQ3(1);
+    const handleSearchHousesByTopStates = async () => {
         setSearchInitiated(true);
-        fetchQuery3();
+        await fetchQuery3(1); // Fetch for the first page
     }
 
-    const fetchQuery3 = async () => {
+    const fetchQuery3 = async (page) => {
         try {
-            const response = await axios.get(`${serverPath}/api/houses/growing/?min_price=${minPrice}&max_price=${maxPrice}&page=${pageQ3}&pageSize=${pageSizeQ3}`);
+            console.log(page);
+            const response = await axios.get(`${serverPath}/api/houses/growing/?min_price=${minPrice}&max_price=${maxPrice}&page=${page}&pageSize=10`);
             setResultsQ3(response.data);
             console.log(response.data);
-
         } catch(err) {
             console.log('Error fetching data: ', err);
             setResultsQ3([]); 
         }
     }
 
-    const nextPageQ3 = () => {
-        if (resultsQ3.length === pageSizeQ3) {
-            setPageQ3(pageQ3 + 1);
-            fetchQuery3();
+    const nextPageQ3 = async (page) => {
+        if (resultsQ3.length === 10) {
+            setPageQ3(page);
+            await fetchQuery3(page);
         }
     }
 
-    const prevPageQ3 = () => {
-        if (pageQ3 > 1) {
-            setPageQ3(pageQ3 - 1);
-            fetchQuery3();
+    const prevPageQ3 = async (page) => {
+        if (page >= 1) {
+            setPageQ3(page);
+            await fetchQuery3(page);
         }
     }
     
@@ -82,7 +80,7 @@ export default function EduGrowthToStatePage() {
                     <Grid container spacing={2} justifyContent={"center"} alignItems={"center"}>
                         
                         {resultsQ3.length > 0 ? (
-                            resultsQ3.slice(0, 10).map((house, index) => (
+                            resultsQ3.map((house, index) => (
                                 <Grid item key={index} xs={2.4} sm={2.4} md={2.4} lg={2.4}>
                                     <Card raised>
                                         <CardContent>
@@ -106,8 +104,8 @@ export default function EduGrowthToStatePage() {
                             <Typography style={{ marginTop: "5rem", marginBottom: "3rem" }}>No Search yet. Please initiate a search to see results.</Typography>
                         )}
                     </Grid>
-                    <Button onClick={() => prevPageQ3()} disabled={pageQ3 === 1} style={{marginTop: "1rem"}}>Previous</Button>
-                    <Button onClick={() => nextPageQ3()} disabled={resultsQ3.length < 10} style={{marginTop: "1rem"}}>Next</Button>
+                    <Button onClick={() => prevPageQ3(pageQ3 - 1)} disabled={!searchInitiated || pageQ3 === 1} style={{marginTop: "1rem"}}>Previous</Button>
+                    <Button onClick={() => nextPageQ3(pageQ3 + 1)} disabled={!searchInitiated || resultsQ3.length < 10} style={{marginTop: "1rem"}}>Next</Button>
                     <hr style={{marginTop: "2rem", marginBottom: "1rem"}}/>
 
                 </Grid>

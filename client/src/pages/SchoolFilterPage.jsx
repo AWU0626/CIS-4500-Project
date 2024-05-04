@@ -14,7 +14,7 @@ export default function SchoolFilterPage() {
     const minGrade = 0;
     const maxGrade = 12;
     const minEnrollment = 0;
-    const maxEnrollment = 3000;
+    const maxEnrollment = 2000;
     const [grade, setGrade] = useState([0, 12]);
     const [enrollment, setEnrollment] = useState(0);
     const [childrenCount, setChildrenCount] = useState(1);
@@ -129,16 +129,14 @@ export default function SchoolFilterPage() {
                 {/* Min and Max grade */}
                 <Grid item xs={4} style={{marginRight: "1rem"}}>
                     <Box sx={{ width: '100%' }}>
-                        <Typography> 
-                            <h3 style={{textDecoration: 'underline', marginBottom: "25px"}}>Grade range</h3>
-                        </Typography>
+                        <h3 style={{textDecoration: 'underline', marginBottom: "25px"}}>Grade Range</h3>
                         <Grid container spacing={2} alignItems="center">
                             <Grid item>
                                 <Typography style={{fontSize: "1.25rem"}}>{minGrade}</Typography>
                             </Grid>
                             <Grid item xs>
                                 <Slider
-                                    getAriaLabel={() => 'Grade range'}
+                                    getAriaLabel={() => 'Grade Range'}
                                     value={grade}
                                     onChange={handleChangeGrade}
                                     valueLabelDisplay="auto"
@@ -157,9 +155,7 @@ export default function SchoolFilterPage() {
                 {/* Min number of enrollment*/}
                 <Grid item xs={4} style={{marginRight: "1rem"}}>
                     <Box sx={{ width: '100%' }}>
-                        <Typography>
-                            <h3 style={{ textDecoration: 'underline', marginBottom: "25px" }}>Enrollment limit</h3>
-                        </Typography>
+                        <h3 style={{ textDecoration: 'underline', marginBottom: "25px" }}>Enrollment Lower Limit</h3>
                         <Grid container spacing={2} alignItems="center">
                             <Grid item>
                             <Typography sx={{ fontSize: "1.25rem" }}>{minEnrollment}</Typography>
@@ -175,7 +171,7 @@ export default function SchoolFilterPage() {
                             />
                             </Grid>
                             <Grid item>
-                                <Typography sx={{ fontSize: "1.25rem", m: "6px" }}>{maxEnrollment}</Typography>
+                                <Typography sx={{ fontSize: "1.25rem", m: "6px" }}>{maxEnrollment}+</Typography>
                             </Grid>
                         </Grid>
                     </Box>
