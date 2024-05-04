@@ -5,14 +5,14 @@ const PageNavigator = ({currentPage, totalPages, onPageChange}) => {
   return (
     <div>
       <Button
-        disabled={currentPage === 1}
+        disabled={currentPage <= 1}
         onClick={() => onPageChange(1)}
         className="pageNavigatorButton"
       >
         ⏪️
       </Button>
       <Button
-        disabled={currentPage === 1}
+        disabled={currentPage <= 1}
         onClick={() => onPageChange(currentPage - 1)}
         className="pageNavigatorButton"
       >

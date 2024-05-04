@@ -15,54 +15,63 @@ export default function SchoolToCityPage() {
   const [selectedState, setSelectedState] = useState(null);
   const [selectedCounty, setSelectedCounty] = useState(null);
   const [images, setImages] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1); // 1 indexed
-  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0); // 1 indexed
+  const [totalPages, setTotalPages] = useState(0);
+  const [allData, setAllData] = useState([]);
   const pageSize = 9; // limit to 9 because google maps api is expensive
 
   // gets results from query5  
-  const fetchQuery5 = async (currPage) => {
+  const fetchQuery5 = async () => {
     try {
       const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/cities/recommended/?num_student=${numStudent}&num_faculty=${numFaculty}&start_grade=${gradeRange[0]}&end_grade=${gradeRange[1]}`);
-      const offset = (currPage - 1) * pageSize;
-      const slicedData = response.data.slice(offset, offset + pageSize);
-      const numResults = response.data.length;
-      setTotalPages(Math.ceil(numResults/pageSize));
-      
-      console.log('currentPage: ' + currPage);
-      console.log('offset: ' + offset);
-      console.log('total pages: ' + Math.ceil(numResults/pageSize));
-      console.log(slicedData);
-
-      const data = slicedData.map((row, index) => {
-        const { STATE, COUNTY, ...rest } = row;
-        return { id: index, STATE_COUNTY: `${row.STATE}, ${row.COUNTY}`, ...rest };
-      });
-
-      console.log(data);
-
-      if (configMap.apikey.length !== 0) {
-        const allphotos = await Promise.all(data.map(async (row, index) => {
-          const photo = await axios.get(`http://${config.server_host}:${config.server_port}/api/place_search/?address=${row.STATE_COUNTY},${row.CITY}&apikey=${configMap.apikey}`, { responseType: 'blob' });
-          if (photo.data.type === 'image/jpeg') {
-            console.log(photo.data);
-            const imageUrl = URL.createObjectURL(photo.data);
-            return imageUrl;
-          } else {
-            return '';
-          }
-        }));
-        setImages(allphotos);
-      } else {
-        const emptyPhotos = [];
-        for (let i = 0; i < pageSize; i++) {
-          emptyPhotos.push('');
-        }
-        setImages(emptyPhotos);
-      }
-      setData(data)
+      setAllData(response.data)
+      setCurrentPage(1);
     } catch (error) {
       console.error(error);
     }
+  };
+
+  const func = async (currPage) => {
+    if (currPage === 0) {
+      return;
+    }
+    const offset = (currPage - 1) * pageSize;
+    const slicedData = allData.slice(offset, offset + pageSize);
+    const numResults = allData.length;
+    setTotalPages(Math.ceil(numResults / pageSize));
+
+    console.log('currentPage: ' + currPage);
+    console.log('offset: ' + offset);
+    console.log('total pages: ' + Math.ceil(numResults / pageSize));
+    console.log(slicedData);
+
+    const data = slicedData.map((row, index) => {
+      const { STATE, COUNTY, ...rest } = row;
+      return { id: index, STATE_COUNTY: `${row.STATE}, ${row.COUNTY}`, ...rest };
+    });
+
+    console.log(data);
+
+    if (configMap.apikey.length !== 0) {
+      const allphotos = await Promise.all(data.map(async (row, index) => {
+        const photo = await axios.get(`http://${config.server_host}:${config.server_port}/api/place_search/?address=${row.STATE_COUNTY},${row.CITY}&apikey=${configMap.apikey}`, { responseType: 'blob' });
+        if (photo.data.type === 'image/jpeg') {
+          console.log(photo.data);
+          const imageUrl = URL.createObjectURL(photo.data);
+          return imageUrl;
+        } else {
+          return '';
+        }
+      }));
+      setImages(allphotos);
+    } else {
+      const emptyPhotos = [];
+      for (let i = 0; i < pageSize; i++) {
+        emptyPhotos.push('');
+      }
+      setImages(emptyPhotos);
+    }
+    setData(data)
   };
 
   const handleClick = (STATE_COUNTY) => {
@@ -75,8 +84,11 @@ export default function SchoolToCityPage() {
 
   const handlePageChange = async (pageNumber) => {
     setCurrentPage(pageNumber);
-    await fetchQuery5(pageNumber);
   };
+
+  useEffect(() => {
+    func(currentPage);
+  }, [currentPage]);
 
   return (
     <Container  >
@@ -118,7 +130,7 @@ export default function SchoolToCityPage() {
         </div>
       </Grid>
       <Grid item>
-        <Button fullWidth onClick={() => fetchQuery5(currentPage)} style={{ left: '50%', transform: 'translateX(-50%)' }}>
+        <Button fullWidth onClick={() => { fetchQuery5(1); }} style={{ left: '50%', transform: 'translateX(-50%)' }}>
           Search
         </Button>
       </Grid>
