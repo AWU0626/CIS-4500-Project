@@ -1,5 +1,7 @@
 import React, { useState } from "react";
+import { DataGrid } from '@mui/x-data-grid';
 import axios from "axios";
+import { HoverButton } from '../components/HoverButton';
 import {
     Container,
     Grid,
@@ -16,9 +18,9 @@ import {
     MenuItem,
     FormControl,
     InputLabel,
-    CircularProgress
+    CircularProgress,
 } from "@mui/material";
-import { DataGrid } from '@mui/x-data-grid';
+import { styled } from '@mui/system';
 
 const config = require("../config.json");
 const serverPath = `http://${config.server_host}:${config.server_port}`;
@@ -64,6 +66,15 @@ export default function EduGrowthToStatePage() {
         setResults(data);
         setLoadingQ8(false);
     };
+
+    // for the button in the DataGrid - transition effect
+    const StyledButton = styled(Button)({
+        width: 30,
+        '&:hover': {
+            width: 120,
+        },
+        transition: 'width 0.5s',
+    });
 
     const handleSearchHousesByTopStates = async () => {
         setSearchInitiated(true);
@@ -336,12 +347,35 @@ export default function EduGrowthToStatePage() {
                             <DataGrid
                                 rows={results}
                                 columns={[
-                                    { field: 'id', headerName: 'ID', width: 120 },
+                                    { field: 'id', headerName: 'House ID', width: 120 },
                                     { field: 'STATE', headerName: 'State', width: 100 },
                                     { field: 'city', headerName: 'City', width: 130 },
                                     { field: 'zip_code', headerName: 'ZIP Code', width: 130 },
-                                    { field: 'price', headerName: 'Price', width: 130 },
-                                    { field: 'AVG_SCORE', headerName: 'Average Score', width: 110 },
+                                    {
+                                        field: 'price',
+                                        headerName: 'Price',
+                                        width: 120,
+                                        valueFormatter: ({ value }) => `$${value.toLocaleString()}`,
+                                    },
+                                    {
+                                        field: 'AVG_SCORE',
+                                        headerName: 'Match %',
+                                        width: 100, type: 'number',
+                                        valueFormatter: ({ value }) => `${value * 100}%`
+                                    },
+                                    {
+                                        field: 'renderCell',
+                                        headerName: 'Schools in Area',
+                                        width: 150,
+                                        renderCell: (params) => {
+                                            return (
+                                                <HoverButton>
+                                                    onClick={() => console.log(params.row.id)}
+                                                </HoverButton>
+
+                                            );
+                                        },
+                                    },
                                 ]}
                             />
                         </div>
