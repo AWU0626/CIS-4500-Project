@@ -38,7 +38,7 @@ export default function NavBar() {
         <Toolbar disableGutters>
           <NavText href='/' text='ScholarStreets' isMain />
           <NavText href='/query7' text='query7' />
-          <NavText href='/query5' text='query5' />
+          <NavText href='/query5' text='EducationCities' />
           <NavText href='/query3-8' text='query3-8' />
           <NavText href='/query6' text='query6' />
         </Toolbar>
