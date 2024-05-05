@@ -94,6 +94,14 @@ export default function SchoolToCityPage() {
     <Container  >
       {selectedState && selectedCounty && <CountyStateCard state={selectedState} county={selectedCounty} handleClose={() => { setSelectedCounty(null); setSelectedState(null) }} />}
       <h2 align='center'>Find Cities</h2>
+      <Grid item xs={6} align='left' style={{ margin: '20px' }}>
+          <Typography>
+            Simply type into the box how many faculty members you would prefer to take care of a certain amount of students. We will calculate the 
+            student to faculty ratio for you! Finally, select what starting and end grade you would want your school to have.
+
+            If you are interested in a certain state-county, you can click on its name to check its education history!
+          </Typography>
+        </Grid>
       <Grid container spacing={4} alignItems='center' justifyContent='center' style={{ marginBottom: '16px' }}>
         <Grid item xs={2} sm={2} md={2}>
           <TextField label='number of students' value={numStudent} onChange={(e) => {
@@ -130,7 +138,7 @@ export default function SchoolToCityPage() {
         </div>
       </Grid>
       <Grid item>
-        <Button fullWidth onClick={() => { fetchQuery5(1); }} style={{ left: '50%', transform: 'translateX(-50%)' }}>
+        <Button fullWidth onClick={() => {setCurrentPage(0); fetchQuery5(1); }} style={{ left: '50%', transform: 'translateX(-50%)' }}>
           Search
         </Button>
       </Grid>
