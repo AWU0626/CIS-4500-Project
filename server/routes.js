@@ -134,10 +134,10 @@ limit 10;`
 
 // Route 5: GET /query5
 const query5 = async function (req, res) {
-  const numStudent = req.query.num_student ? req.query.num_student : 20;
-  const numFaculty = req.query.num_faculty ? req.query.num_faculty : 1; 
-  const startGrade = req.query.start_grade ? req.query.start_grade : 0;
-  const endGrade = req.query.end_grade ? req.query.end_grade : 8;
+  const numStudent = req.query.num_student ? req.query.num_student : 20
+  const numFaculty = req.query.num_faculty ? req.query.num_faculty : 1
+  const startGrade = req.query.start_grade ? req.query.start_grade : 0
+  const endGrade = req.query.end_grade ? req.query.end_grade : 8
 
   const query = `WITH RATIO_PER_SCHOOL AS (
     SELECT STATE, COUNTY, CITY, START_GRADE, END_GRADE, (ENROLLMENT / FT_TEACHER) AS ratio
@@ -188,7 +188,7 @@ SELECT round(CITY_AVG_RATIO, 2) AS CITY_AVG_RATIO,
    round(AVG_HIGH_SCHOOL_GRAD_GROWTH, 2) AS AVG_HIGH_SCHOOL_GRAD_GROWTH,
    A.STATE, COUNTY, CITY
 FROM AVG_RATIO_CITYSTATE A JOIN EDUCATION_filtered E ON A.COUNTY = E.AREA_NAME AND A.STATE = E.STATE
-ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC;`;
+ORDER BY CITY_AVG_RATIO, STATE_AVG_RATIO, AVG_HIGH_SCHOOL_GRAD_GROWTH DESC;`
 
   connection.query(query,
     (err, data) => {
@@ -254,24 +254,23 @@ const query6 = async function (req, res) {
     } else {
       res.json(data)
     }
-  });
+  })
 }
 
 // Route 7: GET /api/areas/zips/recommended/
-const query7 = async function(req, res) {
-  const page = req.query.page;
-  const pageSize = req.query.page_size ?? 10;
-  const offset = (page - 1) * pageSize;
+const query7 = async function (req, res) {
+  const page = req.query.page
+  const pageSize = req.query.page_size ?? 10
+  const offset = (page) * pageSize
 
-  const state = req.params.state;
-  const price_min = req.query.price_min ?? 50000;
-  const price_max = req.query.price_max ?? 1000000;
-  const beds_min = req.query.beds_min ?? 1;
-  const baths_min = req.query.baths_min ?? 1;
-  const enrollment_min = req.query.enrollment_min ?? 800;
-  const teachers_min = req.query.teachers_min ?? 20;
-  const start_grade = req.query.start_grade ?? 1;
-
+  const state = req.params.state
+  const price_min = req.query.price_min ?? 50000
+  const price_max = req.query.price_max ?? 1000000
+  const beds_min = req.query.beds_min ?? 1
+  const baths_min = req.query.baths_min ?? 1
+  const enrollment_min = req.query.enrollment_min ?? 800
+  const teachers_min = req.query.teachers_min ?? 20
+  const start_grade = req.query.start_grade ?? 1
   const query = `
     SELECT r.CITY, r.ZIP_CODE,
       AVG(r.PRICE) as AVG_PRICE, AVG(r.BED) as AVG_BED,
@@ -304,36 +303,36 @@ const query7 = async function(req, res) {
             AVG_BED DESC,
             AVG_BATH DESC,
             AVG_STUDENT_TEACHER_RATIO ASC
-    LIMIT ${pageSize} OFFSET ${offset};
-  `;
+  `
+    // LIMIT ${pageSize} OFFSET ${offset};
 
-  connection.query(query, [state, price_min, price_max, beds_min, baths_min, enrollment_min, 
+  connection.query(query, [state, price_min, price_max, beds_min, baths_min, enrollment_min,
     teachers_min, start_grade, pageSize, offset], (err, data) => {
     if (err || data.length === 0) {
-      console.log(err);
-      res.status(500).json({ error: 'An error occurred while processing this request' });
+      console.log(err)
+      res.status(500).json({ error: 'An error occurred while processing this request' })
     } else {
-      res.json(data);
+      res.json(data)
     }
-  });
+  })
 }
 
 // Route 8: GET /query8
-const query8 = async function(req, res) {
-  const price_min = req.query.price_min ?? 100000;
-  const price_max = req.query.price_max ?? 600000;
-  const P = req.query.P;
-  const S = req.query.S;
+const query8 = async function (req, res) {
+  const price_min = req.query.price_min ?? 100000
+  const price_max = req.query.price_max ?? 600000
+  const P = req.query.P
+  const S = req.query.S
 
-  let spacePerPerson;
+  let spacePerPerson
   if (S === 'small') {
-    spacePerPerson = 150;
+    spacePerPerson = 150
   } else if (S === 'medium') {
-    spacePerPerson = 250;
+    spacePerPerson = 250
   } else if (S === 'large') {
-    spacePerPerson = 450;
+    spacePerPerson = 450
   } else {
-    return res.status(400).json({ error: 'Invalid value for S. It should be either "small", "medium", or "large".' });
+    return res.status(400).json({ error: 'Invalid value for S. It should be either "small", "medium", or "large".' })
   }
 
   const query = `
@@ -405,16 +404,16 @@ const query8 = async function(req, res) {
     GROUP BY fs.HOUSE_ID, STATE, CITY, ZIP_CODE, PRICE
     ORDER BY AVG_SCORE DESC
     LIMIT 20;
-  `;
+  `
 
   connection.query(query, [P, spacePerPerson, P, spacePerPerson], (err, data) => {
     if (err || data.length === 0) {
-      console.log(err);
-      res.status(500).json({ error: 'An error occurred while processing this request' });
+      console.log(err)
+      res.status(500).json({ error: 'An error occurred while processing this request' })
     } else {
-      res.json(data);
+      res.json(data)
     }
-  });
+  })
 }
 
 // Route 9: GET /query9
@@ -468,45 +467,45 @@ LIMIT 10 OFFSET ${(page - 1) * 10};`
 
 // Route 11: GET /place_search
 const place_search = async function (req, res) {
-  const address = req.query.address;
-  const apiKey = req.query.apikey;
+  const address = req.query.address
+  const apiKey = req.query.apikey
   const params = {
     textQuery: address
-  };
-  
+  }
+
   const headers = {
     'Content-Type': 'application/json',
     'X-Goog-Api-Key': apiKey,
     'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.name'
-  };
-  
+  }
+
   try {
-    const response = await axios.post('https://places.googleapis.com/v1/places:searchText', params, { headers });
-    console.log(response.data);
-    const placeName = response.data.places[0].name;
+    const response = await axios.post('https://places.googleapis.com/v1/places:searchText', params, { headers })
+    console.log(response.data)
+    const placeName = response.data.places[0].name
     console.log(placeName)
-    
+
     const config = {
-      headers :{
+      headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
         'X-Goog-FieldMask': 'id,displayName,photos'
       }
     }
-    const getPlace = await axios.get(`https://places.googleapis.com/v1/${placeName}`, config);
-    console.log(getPlace.data);
+    const getPlace = await axios.get(`https://places.googleapis.com/v1/${placeName}`, config)
+    console.log(getPlace.data)
 
     if (getPlace.data.photos) {
-      const photoInfo = getPlace.data.photos[0].name;
-      console.log(photoInfo);
-      const getPhoto = await axios.get(`https://places.googleapis.com/v1/${photoInfo}/media?maxHeightPx=400&maxWidthPx=400&key=${apiKey}`, { responseType: 'arraybuffer' });
-      res.setHeader('Content-Type', 'image/jpeg');
-      res.send(getPhoto.data);
+      const photoInfo = getPlace.data.photos[0].name
+      console.log(photoInfo)
+      const getPhoto = await axios.get(`https://places.googleapis.com/v1/${photoInfo}/media?maxHeightPx=400&maxWidthPx=400&key=${apiKey}`, { responseType: 'arraybuffer' })
+      res.setHeader('Content-Type', 'image/jpeg')
+      res.send(getPhoto.data)
     } else {
-      res.json({error: 'No Photo Found'});
+      res.json({ error: 'No Photo Found' })
     }
   } catch (error) {
-    console.log(error);
+    console.log(error)
   }
 }
 
