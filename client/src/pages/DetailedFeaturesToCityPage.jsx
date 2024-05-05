@@ -9,8 +9,7 @@ export default function DetailedFeaturesToCityPage() {
     // first, set initial state
     const [data, setData] = useState([]);
     const [selectedState, setSelectedState] = useState(null);
-    const [currentPage, setCurrentPage] = useState(0); // 1 indexed
-    const [totalPages, setTotalPages] = useState(0);
+    const [currentPage, setCurrentPage] = useState(9); // 0 indexed
     const [allData, setAllData] = useState([]);
     const pageSize = 10; // limit to 10 because google maps api is expensive
     const [priceRange, setPriceRange] = useState([0, 1000000]);
@@ -19,6 +18,7 @@ export default function DetailedFeaturesToCityPage() {
     const [enrollmentMin, setEnrollmentMin] = useState(0);
     const [teachersMin, setTeachersMin] = useState(20);
     const [startGrade, setStartGrade] = useState(1);
+    const [hasNextPage, setHasNextPage] = useState(false);
     const dataColumns = [
         {field: 'ZIP_CODE', headerName: 'Zip', width: 150},
         {field: 'CITY', headerName: 'City', width: 150},
@@ -39,11 +39,24 @@ export default function DetailedFeaturesToCityPage() {
         try {
             const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/zips/recommended/${selectedState}/?page=${currentPage}&price_min=${priceRange[0]}&price_max=${priceRange[1]}&beds_min=${numBedsMin}&baths_min=${numBathsMin}&enrollment_min=${enrollmentMin}&teachers_min=${teachersMin}&start_grade=${startGrade}&page_size=${pageSize}`);
             setAllData(response.data);
-            setCurrentPage(1);
         } catch (error) {
             console.error(error);
         }
     };
+
+    const handleSearch = async () => {
+        if (currentPage === 0) {
+            fetchQuery7().then(r => console.log('fetched data'));
+            return;
+        }
+        await fetchQuery7().then(r => console.log('fetched data'));
+        setCurrentPage(0);
+    };
+
+    // refetch data when currentPage changes
+    // useEffect(() => {
+    //     fetchQuery7().then(r => console.log('fetched data'));
+    // }, [currentPage]);
 
     return (
         <Container >
@@ -128,7 +141,7 @@ export default function DetailedFeaturesToCityPage() {
                             }} />
                         </Grid>
                         <Grid item xs={4}>
-                            <Button variant="contained" color="primary" onClick={fetchQuery7}>Search</Button>
+                            <Button variant="contained" color="primary" onClick={() => handleSearch()}>Search</Button>
                         </Grid>
                     </Grid>
                 </Grid>
@@ -138,11 +151,15 @@ export default function DetailedFeaturesToCityPage() {
                 getRowId={(row) => row.ZIP_CODE}
                 rows={allData}
                 columns={dataColumns}
-                pageSize={pageSize}
+                pageSize={10}
                 rowsPerPageOptions={[10]}
                 autoHeight
-                page={currentPage - 1}
-                onPageChange={(newPage) => setCurrentPage(newPage)}
+                page={currentPage}
+                onPageChange={(newPage) => {
+                    // get new data from server
+                    setCurrentPage(newPage);
+                    console.log(`Current Page: ${currentPage}`)
+                }}
             />
 
         </Container>

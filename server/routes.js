@@ -271,7 +271,6 @@ const query7 = async function (req, res) {
   const enrollment_min = req.query.enrollment_min ?? 800
   const teachers_min = req.query.teachers_min ?? 20
   const start_grade = req.query.start_grade ?? 1
-
   const query = `
     SELECT r.CITY, r.ZIP_CODE,
       AVG(r.PRICE) as AVG_PRICE, AVG(r.BED) as AVG_BED,
@@ -304,8 +303,8 @@ const query7 = async function (req, res) {
             AVG_BED DESC,
             AVG_BATH DESC,
             AVG_STUDENT_TEACHER_RATIO ASC
-    LIMIT ${pageSize} OFFSET ${offset};
   `
+    // LIMIT ${pageSize} OFFSET ${offset};
 
   connection.query(query, [state, price_min, price_max, beds_min, baths_min, enrollment_min,
     teachers_min, start_grade, pageSize, offset], (err, data) => {
