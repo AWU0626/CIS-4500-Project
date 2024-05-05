@@ -261,7 +261,7 @@ const query6 = async function (req, res) {
 const query7 = async function (req, res) {
   const page = req.query.page
   const pageSize = req.query.page_size ?? 10
-  const offset = (page - 1) * pageSize
+  const offset = (page) * pageSize
 
   const state = req.params.state
   const price_min = req.query.price_min ?? 50000
