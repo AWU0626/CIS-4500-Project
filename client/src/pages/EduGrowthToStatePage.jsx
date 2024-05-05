@@ -105,9 +105,7 @@ export default function EduGrowthToStatePage() {
             return;
         }
         try {
-            const response = await axios.get(
-                `${serverPath}/api/houses/growing/?price_min=${minPrice}&price_max=${maxPrice}&page=${page}&pageSize=10`
-            );
+            const response = await axios.get(`${serverPath}/api/houses/growing/?price_min=${minPrice}&price_max=${maxPrice}&page=${page}&pageSize=10`);
             setResultsQ3(response.data);
         } catch (err) {
             console.log("Error fetching data: ", err);
