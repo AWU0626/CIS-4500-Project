@@ -22,7 +22,6 @@ import {
     InputLabel,
     CircularProgress,
 } from "@mui/material";
-import { styled } from '@mui/system';
 import ListOfSchoolsCard from "../components/ListOfSchoolsCard";
 
 const config = require("../config.json");
@@ -46,8 +45,17 @@ export default function EduGrowthToStatePage() {
 
     // query 8 submit handler
     const fetchQuery8 = async () => {
-        setLoadingQ8(true);
+        // input validation
+        if (
+            !Number.isInteger(priceMin) || priceMin <= 0 ||
+            !Number.isInteger(priceMax) || priceMax <= 0 ||
+            priceMax <= priceMin
+        ) {
+            alert('Please enter valid input. Both prices should be positive whole numbers and Maximum Price should be greater than Minimum Price.');
+            return;
+        }
 
+        setLoadingQ8(true);
         const response = await axios.get(`${serverPath}/api/areas/zips/occupancy`, {
             params: {
                 price_min: priceMin,
@@ -56,7 +64,7 @@ export default function EduGrowthToStatePage() {
                 S: space,
             },
         });
-        console.log(response.data);
+        
         // Map the data to the structure expected by DataGrid
         const data = response.data.map(item => ({
             id: item.house_id,
@@ -91,13 +99,16 @@ export default function EduGrowthToStatePage() {
     };
 
     const fetchQuery3 = async (page) => {
+        // input validation
+        if (minPrice <= 0 || maxPrice <= 0 || maxPrice < minPrice) {
+            alert("Please enter valid input. Both prices should be positive numbers and Maximum Price should be greater than Minimum Price.");
+            return;
+        }
         try {
-            console.log(page);
             const response = await axios.get(
-                `${serverPath}/api/houses/growing/?min_price=${minPrice}&max_price=${maxPrice}&page=${page}&pageSize=10`
+                `${serverPath}/api/houses/growing/?price_min=${minPrice}&price_max=${maxPrice}&page=${page}&pageSize=10`
             );
             setResultsQ3(response.data);
-            console.log(response.data);
         } catch (err) {
             console.log("Error fetching data: ", err);
             setResultsQ3([]);
@@ -145,6 +156,7 @@ export default function EduGrowthToStatePage() {
                                     required
                                     id="outlined-required"
                                     label="Maximum Price"
+                                    type="number"
                                     defaultValue="600000"
                                     onChange={(event) =>
                                         setMaxPrice(parseFloat(event.target.value) || 600000)
@@ -158,6 +170,7 @@ export default function EduGrowthToStatePage() {
                                     required
                                     id="outlined-required"
                                     label="Minimum Price"
+                                    type="number"
                                     defaultValue="10000"
                                     onChange={(event) =>
                                         setMinPrice(parseFloat(event.target.value) || 10000)
@@ -273,6 +286,7 @@ export default function EduGrowthToStatePage() {
                                         required
                                         id="outlined-required"
                                         label="Minimum Price"
+                                        type="number"
                                         defaultValue={priceMin}
                                         onChange={(event) =>
                                             setPriceMin(parseFloat(event.target.value) || 100000)
@@ -286,6 +300,7 @@ export default function EduGrowthToStatePage() {
                                         required
                                         id="outlined-required"
                                         label="Maximum Price"
+                                        type="number"
                                         defaultValue={priceMax}
                                         onChange={(event) =>
                                             setPriceMax(parseFloat(event.target.value) || 600000)
@@ -396,7 +411,6 @@ export default function EduGrowthToStatePage() {
             <Dialog fullWidth maxWidth="xl" open={open} onClose={handleClose} aria-labelledby="school-list">
                 <DialogContent>
                     {/* make sure you pass state and city from row data */}
-                    {console.log(currentRow)}
                     <ListOfSchoolsCard state={currentRow.STATE} city={currentRow.city} />
                 </DialogContent>
             </Dialog>

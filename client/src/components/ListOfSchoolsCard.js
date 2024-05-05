@@ -27,6 +27,12 @@ export default function ListOfSchoolsCard(props) {
     };
 
     const fetchQuery4 = async () => {
+        // form validation only positive numbers and max > min otherwie altert
+        if (ratioMin <= 0 || ratioMax <= 0 || ratioMax < ratioMin || ratioMax == null || ratioMin == null){
+            alert("Please enter positive numbers for the ratio and max must be greater than min");
+            return;
+        }
+
         try {
             setLoadingQ4(true);
             const response = await axios.get(`${serverPath}/api/schools/ratio/`, {
@@ -81,6 +87,7 @@ export default function ListOfSchoolsCard(props) {
                                     required
                                     id="outlined-required"
                                     label="Minimum S/T Ratio"
+                                    type='number'
                                     defaultValue={ratioMin}
                                     onChange={handleMinRatioChange}
                                 />
@@ -92,6 +99,7 @@ export default function ListOfSchoolsCard(props) {
                                     required
                                     id="outlined-required"
                                     label="Maximum S/T Ratio"
+                                    type='number'
                                     defaultValue={ratioMax}
                                     onChange={handleMaxRatioChange}
                                 />

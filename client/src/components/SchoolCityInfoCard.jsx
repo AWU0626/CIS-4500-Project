@@ -50,6 +50,11 @@ export default function SchoolCityInfoCard(props) {
     }
 
     const fetchQuery9 = async (newPage) => {
+        // input validation
+        if (minPrice < 0 || maxPrice < 0 || maxPrice < minPrice || numBath < 0 || numBed < 0) {
+            alert("Please enter positive numbers for the price, beds, and baths. Max price must be greater than min price.");
+            return;
+        }
         try {
             const response = await axios.get(`${serverPath}/api/houses/?min_price=${minPrice}&max_price=${maxPrice}&min_baths=${numBath}&min_beds=${numBed}&page=${newPage}&state=${school.STATE}`);
             setResultsQ9(response.data);
@@ -61,6 +66,11 @@ export default function SchoolCityInfoCard(props) {
     }
 
     const fetchQuery10 = async (newPage) => {
+        // input validation
+        if (minPrice < 0 || maxPrice < 0 || maxPrice < minPrice) {
+            alert("Please enter positive numbers for the price. Max price must be greater than min price.");
+            return;
+        }
         try {
             const response = await axios.get(`${serverPath}/api/areas/zips/prices/?min_price=${minPrice}&max_price=${maxPrice}&page=${newPage}&state=${school.STATE}`);
             setResultsQ10(response.data);
@@ -120,24 +130,24 @@ export default function SchoolCityInfoCard(props) {
                         <Grid container spacing={3}>
                             <Grid item xs={6}>
                                 <Box sx={{width: '100%', marginTop: "1rem", marginBot: "1rem"}}>
-                                    <TextField required id="outlined-required" label="Maximum Price" 
-                                        defaultValue="1000000000" onChange={(event) => setMaxPrice(parseFloat(event.target.value) || 1000000000)}/>
+                                    <TextField required id="outlined-required" label="Maximum Price" type="number"
+                                        defaultValue="100000" onChange={(event) => setMaxPrice(parseFloat(event.target.value) || 100000)}/>
                                 </Box>
 
                                 <Box sx={{width: '100%', marginTop: "1rem", marginBot: "1rem"}}>
-                                    <TextField required id="outlined-required" label="Number of Baths" 
+                                    <TextField required id="outlined-required" label="Number of Baths" type="number"
                                         defaultValue="0" onChange={(event) => setNumBath(parseInt(event.target.value)) || 0}/>
                                 </Box>
                             </Grid>
 
                             <Grid item xs={6} >
                                 <Box sx={{width: '100%', marginTop: "1rem", marginBot: "1rem"}}>
-                                    <TextField required id="outlined-required" label="Minimum Price" 
+                                    <TextField required id="outlined-required" label="Minimum Price" type="number"
                                         defaultValue="0" onChange={(event) => setMinPrice(parseFloat(event.target.value)) || 0}/>
                                 </Box>
 
                                 <Box sx={{width: '100%', marginTop: "1rem", marginBot: "1rem", marginRight: "2rem"}}>
-                                    <TextField required id="outlined-required" label="Number of Beds" 
+                                    <TextField required id="outlined-required" label="Number of Beds" type="number"
                                         defaultValue="0" onChange={(event) => setNumBed(parseInt(event.target.value)) || 0}/>
                                 </Box>
                             </Grid>

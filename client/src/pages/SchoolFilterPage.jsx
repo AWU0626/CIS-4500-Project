@@ -48,6 +48,11 @@ export default function SchoolFilterPage() {
     const [currentSchool, setCurrentSchool] = useState({});
 
     const handleSearch = async () => {
+        // input validation
+        if (childrenCount < 0) {
+            alert("Number of children must be at least 0");
+            return;
+        }
         try {
             const response = await axios.get(`${serverPath}/api/schools/recommended/?min_start_grade=${grade[0]}&max_end_grade=${grade[1]}&min_enrollment=${enrollment}&num_children=${childrenCount}`);
             setResults(response.data);
@@ -181,7 +186,7 @@ export default function SchoolFilterPage() {
                 <Grid item xs={3}>
                     <Box sx={{width: '100%'}}>
                         <h3 style={{textDecoration: "underline"}}>Number of Children</h3>
-                        <TextField required id="outlined-required" label="Number of Children" defaultValue="1" onChange={handleChangeChildren}/>
+                        <TextField required id="outlined-required" type="number" label="Number of Children" defaultValue="1" onChange={handleChangeChildren}/>
                     </Box>
                 </Grid>
             </Grid>
