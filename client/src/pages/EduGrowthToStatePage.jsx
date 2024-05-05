@@ -20,7 +20,7 @@ export default function EduGrowthToStatePage() {
     const fetchQuery3 = async (page) => {
         try {
             console.log(page);
-            const response = await axios.get(`${serverPath}/api/houses/growing/?min_price=${minPrice}&max_price=${maxPrice}&page=${page}&pageSize=10`);
+            const response = await axios.get(`${serverPath}/api/houses/growing/?price_min=${minPrice}&price_max=${maxPrice}&page=${page}&pageSize=10`);
             setResultsQ3(response.data);
             console.log(response.data);
         } catch(err) {
