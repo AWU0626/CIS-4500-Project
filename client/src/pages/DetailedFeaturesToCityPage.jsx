@@ -63,7 +63,7 @@ export default function DetailedFeaturesToCityPage() {
             <h2 align='center'>Recommended Zips</h2>
             <Grid container spacing={3} alignItems='center' justifyContent='center' style={{ marginBottom: '16px' }}>
                 <Grid item xs={4}>
-                    <Typography>Description TBD</Typography>
+                    <Typography>Given a number of parameters to help filter by, this search can help you find Zip codes worth living in; we'll return Zip codes in the state you choose, ordered by the number of options that fit your needs.</Typography>
                 </Grid>
                 <Grid item xs={8}>
                     <Grid container spacing={3} alignItems='center' justifyContent='center' style={{ marginBottom: '16px' }}>
