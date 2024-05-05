@@ -81,26 +81,30 @@ export default function HomePage() {
             of four main features:
           </Typography>
           <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
-            Tab1
+            Zipcode Search
             <Typography style={{ marginTop: 2, marginBottom: 5 }}>
-              brief description
+            Explore Zip codes that match your criteria effortlessly. Select your state and refine your search by amenities, features, and school information including enrollment, teacher count, and grade levels. Discover the best places to live with ease.
             </Typography>
           </Typography>
           <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
             Education Cities
             <Typography variant="body1" style={{ marginTop: 2, marginBottom: 5 }}>
-              Do not know where to live, but you deeply care about where your child will get the best
-              education in America? Then this tab is just for you!
+            Navigate the maze of educational choices effortlessly with our specialized tab designed for parents who prioritize their child's education above all else. Unsure of where to live but deeply invested in securing the best education for your child in America? Look no further. Simply input your desired grade range, along with the number of students to number of faculty you envision for your child's learning environment. Let our platform guide you towards neighborhoods and communities renowned for their educational excellence, ensuring your child receives the quality education they deserve.
             </Typography>
           </Typography>
           <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
-            Tab3
+            Search Rank
             <Typography style={{ marginTop: 2, marginBottom: 5 }}>
-              brief description
+            Embark on your quest for the perfect home with our innovative double search feature. 
+            Begin by exploring houses in the top 20 states boasting the fastest growth in higher 
+            education over the past decade. Then, refine your search further by entering your preferred 
+            price range and considering factors like the number of occupants and average space per person.
+             Powered by a smart ranking system, our platform utilizes advanced mathematics to prioritize listings,
+              ensuring you find a home that perfectly aligns with your unique needs and preferences.
             </Typography>
           </Typography>
           <Typography variant="h6" style={{ fontWeight: "bold", marginTop: 2, marginBottom: 2 }}>
-            Tab4
+            School Search
             <Typography style={{ marginTop: 2, marginBottom: 5 }}>
               Discover schools based on grade levels and enrollment numbers.
               Get insights into the surrounding areas with basic statistics.

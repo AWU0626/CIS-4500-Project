@@ -9,7 +9,7 @@ function NavText({ href, text, isMain }) {
       variant={isMain ? 'h5' : 'h7'}
       noWrap
       style={{
-        marginRight: '30px',
+        marginRight: '50px',
         fontFamily: 'monospace',
         fontWeight: 700,
         letterSpacing: '.2rem',
@@ -37,10 +37,10 @@ export default function NavBar() {
       <Container maxWidth='xl'>
         <Toolbar disableGutters>
           <NavText href='/' text='ScholarStreets' isMain />
-          <NavText href='/query7' text='query7' />
-          <NavText href='/query5' text='EducationCities' />
-          <NavText href='/query3-8' text='query3-8' />
-          <NavText href='/query6' text='query6' />
+          <NavText href='/query7' text='Zipcode Search' />
+          <NavText href='/query5' text='Education Cities' />
+          <NavText href='/query3-8' text='Search Rank' />
+          <NavText href='/query6' text='School Search' />
         </Toolbar>
       </Container>
     </AppBar>
