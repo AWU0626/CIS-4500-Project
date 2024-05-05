@@ -11,6 +11,8 @@ import {
     TextField,
     Card,
     CardContent,
+    Dialog,
+    DialogContent,
 } from "@mui/material";
 import {
     Slider,
@@ -21,6 +23,7 @@ import {
     CircularProgress,
 } from "@mui/material";
 import { styled } from '@mui/system';
+import ListOfSchoolsCard from "../components/ListOfSchoolsCard";
 
 const config = require("../config.json");
 const serverPath = `http://${config.server_host}:${config.server_port}`;
@@ -67,15 +70,21 @@ export default function EduGrowthToStatePage() {
         setLoadingQ8(false);
     };
 
-    // for the button in the DataGrid - transition effect
-    const StyledButton = styled(Button)({
-        width: 30,
-        '&:hover': {
-            width: 120,
-        },
-        transition: 'width 0.5s',
-    });
+    // states for dialogue content for query 4 
+    const [open, setOpen] = useState(false);
+    const [currentRow, setCurrentRow] = useState({});
 
+    // functions for dialogue content for query 4
+    const handleClickOpen = (rowData) => {
+        setCurrentRow(rowData);
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
+
+    // query 3 handlers
     const handleSearchHousesByTopStates = async () => {
         setSearchInitiated(true);
         await fetchQuery3(1); // Fetch for the first page
@@ -118,8 +127,9 @@ export default function EduGrowthToStatePage() {
             >
                 {/* Query 3 */}
                 <Grid item xs={12}>
-                    <Grid container spacing={3}>
+                <Grid container spacing={3}>
                         <Grid item xs={5}>
+                            <Typography variant="h3">Initial Search</Typography>
                             <Typography>
                                 This initial search will perform a search on houses that are in
                                 the top 20 States with the fastest higher education growth in
@@ -247,7 +257,7 @@ export default function EduGrowthToStatePage() {
                 <Grid item xs={12}>
                     <Grid container spacing={1}>
                         <Grid item xs={5}>
-                            <Typography variant="h3">Double Search</Typography>
+                            <Typography variant="h3">Double Search - Ranking System</Typography>
                             <Typography>
                                 This double search will rank houses from the top areas returned by previous query.
                                 Enter the price range, number of occupants, and average
@@ -346,6 +356,7 @@ export default function EduGrowthToStatePage() {
                         <div style={{ height: 400, width: "90%" }}>
                             <DataGrid
                                 rows={results}
+                                localeText={{ noRowsLabel: "Please enter valid inputs and click search to see results" }}
                                 columns={[
                                     { field: 'id', headerName: 'House ID', width: 120 },
                                     { field: 'STATE', headerName: 'State', width: 100 },
@@ -359,8 +370,8 @@ export default function EduGrowthToStatePage() {
                                     },
                                     {
                                         field: 'AVG_SCORE',
-                                        headerName: 'Match %',
-                                        width: 100, type: 'number',
+                                        headerName: 'Smart Match %',
+                                        width: 130, type: 'number',
                                         valueFormatter: ({ value }) => `${value * 100}%`
                                     },
                                     {
@@ -369,8 +380,8 @@ export default function EduGrowthToStatePage() {
                                         width: 150,
                                         renderCell: (params) => {
                                             return (
-                                                <HoverButton>
-                                                    onClick={() => console.log(params.row.id)}
+                                                <HoverButton onClick={() => handleClickOpen(params.row)}>
+                                                    {/* nothing here for now */}
                                                 </HoverButton>
 
                                             );
@@ -382,6 +393,13 @@ export default function EduGrowthToStatePage() {
                     )}
                 </Grid>
             </Grid>
+            <Dialog fullWidth maxWidth="xl" open={open} onClose={handleClose} aria-labelledby="school-list">
+                <DialogContent>
+                    {/* make sure you pass state and city from row data */}
+                    {console.log(currentRow)}
+                    <ListOfSchoolsCard state={currentRow.STATE} city={currentRow.city} />
+                </DialogContent>
+            </Dialog>
         </Container>
     );
 }
