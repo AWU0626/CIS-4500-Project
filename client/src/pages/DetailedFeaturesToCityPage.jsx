@@ -29,6 +29,32 @@ export default function DetailedFeaturesToCityPage() {
         {field: 'TOTAL_SCHOOLS', headerName: 'Total Schools', width: 150},
         {field: 'AVG_STUDENT_TEACHER_RATIO', headerName: 'Avg Student Teacher Ratio', width: 150},
     ];
+    const validStates = {
+        'Puerto Rico': 'PR',
+        'Virgin Islands': 'VI',
+        'Massachusetts': 'MA',
+        'Connecticut': 'CT',
+        'Vermont': 'VT',
+        'New Hampshire': 'NH',
+        'New York': 'NY',
+        'Rhode Island': 'RI',
+        'Maine': 'ME',
+        'Georgia': 'GA',
+        'New Jersey': 'NJ',
+        'Pennsylvania': 'PA',
+        'Delaware': 'DE',
+        'West Virginia': 'WV',
+        'Ohio': 'OH',
+        'Maryland': 'MD',
+        'Virginia': 'VA',
+        'District of Columbia': 'DC',
+        'North Carolina': 'NC',
+        'Kentucky': 'KY',
+        'Tennessee': 'TN',
+        'South Carolina': 'SC',
+        'Alabama': 'AL',
+        'Florida': 'FL'
+    }
 
     // get results from query7
     const fetchQuery7 = async () => {
@@ -36,8 +62,13 @@ export default function DetailedFeaturesToCityPage() {
         if (selectedState === null) {
             return;
         }
+        // check if valid state
+        if (!(selectedState in validStates)) {
+            // raise an alert
+            alert("Invalid state selected, please select a state from: " + Object.keys(validStates).join(", "));
+        }
         try {
-            const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/zips/recommended/${selectedState}/?page=${currentPage}&price_min=${priceRange[0]}&price_max=${priceRange[1]}&beds_min=${numBedsMin}&baths_min=${numBathsMin}&enrollment_min=${enrollmentMin}&teachers_min=${teachersMin}&start_grade=${startGrade}&page_size=${pageSize}`);
+            const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/zips/recommended/${validStates[selectedState]}/?page=${currentPage}&price_min=${priceRange[0]}&price_max=${priceRange[1]}&beds_min=${numBedsMin}&baths_min=${numBathsMin}&enrollment_min=${enrollmentMin}&teachers_min=${teachersMin}&start_grade=${startGrade}&page_size=${pageSize}`);
             setAllData(response.data);
         } catch (error) {
             console.error(error);
@@ -124,7 +155,7 @@ export default function DetailedFeaturesToCityPage() {
                             <TextField label={"Min Price"} variant="outlined" value={priceRange[0]} onChange={(e) => {
                                 const num = e.target.value
                                 if (!isNaN(num)) {
-                                    setPriceRange([priceRange[0], num === '' ? 0 : parseInt(num)])
+                                    setPriceRange([num === '' ? 0 : parseInt(num), priceRange[1]])
                                 } else {
                                     setPriceRange(priceRange)
                                 }
