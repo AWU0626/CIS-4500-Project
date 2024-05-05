@@ -62,13 +62,20 @@ export default function DetailedFeaturesToCityPage() {
         if (selectedState === null) {
             return;
         }
+        let url = `http://${config.server_host}:${config.server_port}/api/areas/zips/recommended/${validStates[selectedState]}/?page=${currentPage}&price_min=${priceRange[0]}&price_max=${priceRange[1]}&beds_min=${numBedsMin}&baths_min=${numBathsMin}&enrollment_min=${enrollmentMin}&teachers_min=${teachersMin}&start_grade=${startGrade}&page_size=${pageSize}`
         // check if valid state
         if (!(selectedState in validStates)) {
-            // raise an alert
-            alert("Invalid state selected, please select a state from: " + Object.keys(validStates).join(", "));
+            // check abbreviations
+            if (Object.values(validStates).includes(selectedState)) {
+                url = `http://${config.server_host}:${config.server_port}/api/areas/zips/recommended/${selectedState}/?page=${currentPage}&price_min=${priceRange[0]}&price_max=${priceRange[1]}&beds_min=${numBedsMin}&baths_min=${numBathsMin}&enrollment_min=${enrollmentMin}&teachers_min=${teachersMin}&start_grade=${startGrade}&page_size=${pageSize}`
+            } else {
+                // raise an alert
+                alert("Invalid state selected, please select a state from: " + Object.keys(validStates).join(", "));
+                return;
+            }
         }
         try {
-            const response = await axios.get(`http://${config.server_host}:${config.server_port}/api/areas/zips/recommended/${validStates[selectedState]}/?page=${currentPage}&price_min=${priceRange[0]}&price_max=${priceRange[1]}&beds_min=${numBedsMin}&baths_min=${numBathsMin}&enrollment_min=${enrollmentMin}&teachers_min=${teachersMin}&start_grade=${startGrade}&page_size=${pageSize}`);
+            const response = await axios.get(url);
             setAllData(response.data);
         } catch (error) {
             console.error(error);
